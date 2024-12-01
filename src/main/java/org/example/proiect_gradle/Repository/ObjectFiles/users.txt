@@ -1,0 +1,4 @@
+1,LisaTeak,xyz987,lisateak@gmail.com,0747558114,4.5,0
+2,TinaSilver,x1y2z3,tinasilver@gmail.com,0758669327,3.5,0
+3,JohnSmith,password123,john.smith@gmail.com,0711223344,4.5,0
+4,ChrisLee,leePass789,chris.lee@gmail.com,0755667788,4.1,0
