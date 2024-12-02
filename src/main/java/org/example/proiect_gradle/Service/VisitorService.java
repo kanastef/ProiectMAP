@@ -7,8 +7,7 @@ import org.example.proiect_gradle.Domain.Category;
 import org.example.proiect_gradle.Domain.Product;
 import org.example.proiect_gradle.Domain.Review;
 import org.example.proiect_gradle.Domain.User;
-import org.example.proiect_gradle.Repository.FileRepository;
-import org.example.proiect_gradle.Repository.IMRepository;
+import org.example.proiect_gradle.Repository.FileRepository.FileRepository;
 
 public class VisitorService {
     protected final FileRepository<User> userRepo;

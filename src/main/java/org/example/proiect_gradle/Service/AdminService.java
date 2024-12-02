@@ -3,8 +3,7 @@ package org.example.proiect_gradle.Service;
 import java.util.*;
 
 import org.example.proiect_gradle.Domain.*;
-import org.example.proiect_gradle.Repository.FileRepository;
-import org.example.proiect_gradle.Repository.IMRepository;
+import org.example.proiect_gradle.Repository.FileRepository.FileRepository;
 
 public class AdminService extends VisitorService {
     private final FileRepository<Admin> adminRepo;

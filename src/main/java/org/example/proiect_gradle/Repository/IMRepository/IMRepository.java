@@ -1,6 +1,7 @@
-package org.example.proiect_gradle.Repository;
+package org.example.proiect_gradle.Repository.IMRepository;
 
 import org.example.proiect_gradle.Domain.Identifiable;
+import org.example.proiect_gradle.Repository.IRepository;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +43,7 @@ public class IMRepository<T extends Identifiable> implements IRepository<T> {
     }
 
 
-
+    @Override
     public List<T> getAll() {
         return new ArrayList<>(storage.values());
     }

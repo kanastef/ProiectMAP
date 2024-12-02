@@ -1,12 +1,11 @@
-package org.example.proiect_gradle.Repository;
+package org.example.proiect_gradle.Repository.FileRepository;
 
 import org.example.proiect_gradle.Domain.Identifiable;
+import org.example.proiect_gradle.Repository.IMRepository.IMRepository;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 
 public abstract class FileRepository<T extends Identifiable> extends IMRepository<T> {

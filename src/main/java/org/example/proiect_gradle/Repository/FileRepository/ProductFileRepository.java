@@ -1,4 +1,4 @@
-package org.example.proiect_gradle.Repository;
+package org.example.proiect_gradle.Repository.FileRepository;
 
 import org.example.proiect_gradle.Domain.Product;
 

@@ -3,7 +3,7 @@ package org.example.proiect_gradle;
 import org.example.proiect_gradle.Controller.Controller;
 import org.example.proiect_gradle.Domain.*;
 import org.example.proiect_gradle.Presentation.ConsoleApp;
-import org.example.proiect_gradle.Repository.*;
+import org.example.proiect_gradle.Repository.FileRepository.*;
 import org.example.proiect_gradle.Service.AdminService;
 import org.example.proiect_gradle.Service.UserService;
 import org.example.proiect_gradle.Service.VisitorService;
@@ -15,17 +15,17 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
-        String userFilename = "src/main/java/org/example/proiect_gradle/Repository/ObjectFiles/users.txt";
-        String productFilename = "src/main/java/org/example/proiect_gradle/Repository/ObjectFiles/products.txt";
-        String categoriesFilename = "src/main/java/org/example/proiect_gradle/Repository/ObjectFiles/categories.txt";
-        String offersFilename = "src/main/java/org/example/proiect_gradle/Repository/ObjectFiles/offers.txt";
-        String orderFilename = "src/main/java/org/example/proiect_gradle/Repository/ObjectFiles/orders.txt";
-        String reviewsFilename = "src/main/java/org/example/proiect_gradle/Repository/ObjectFiles/reviews.txt";
-        String adminsFilename = "src/main/java/org/example/proiect_gradle/Repository/ObjectFiles/admins.txt";
-        String visitorsFilename = "src/main/java/org/example/proiect_gradle/Repository/ObjectFiles/visitors.txt";
-        String likedProducts = "src/main/java/org/example/proiect_gradle/Repository/ObjectFiles/likedProducts.txt";
-        String listedProducts = "src/main/java/org/example/proiect_gradle/Repository/ObjectFiles/listedProducts.txt";
-        String orderedProducts = "src/main/java/org/example/proiect_gradle/Repository/ObjectFiles/orderedProducts.txt";
+        String userFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/users.txt";
+        String productFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/products.txt";
+        String categoriesFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/categories.txt";
+        String offersFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/offers.txt";
+        String orderFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/orders.txt";
+        String reviewsFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/reviews.txt";
+        String adminsFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/admins.txt";
+        String visitorsFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/visitors.txt";
+        String likedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/likedProducts.txt";
+        String listedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/listedProducts.txt";
+        String orderedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/orderedProducts.txt";
         VisitorFileRepository visitorRepo = new VisitorFileRepository(visitorsFilename);
         UserFileRepository userRepo = new UserFileRepository(userFilename, listedProducts, likedProducts);
         ProductFileRepository productRepo = new ProductFileRepository(productFilename);

@@ -7,5 +7,5 @@ public interface IRepository<T> {
     public T read(int id);
     public void update(T object);
     public T delete(int id);
-    List<T> getAll();
+    public List<T> getAll();
 }
