@@ -6,6 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.example.proiect_gradle.Exceptions.EntityNotFoundException;
+import org.example.proiect_gradle.Exceptions.BusinessLogicException;
+import org.example.proiect_gradle.Exceptions.CustomException;
+
+
+
 import org.example.proiect_gradle.Domain.*;
 import org.example.proiect_gradle.Repository.FileRepository.FileRepository;
 
@@ -47,7 +53,7 @@ public class UserService extends VisitorService {
         List<User> users = userRepo.findByCriteria(user -> user.getUserName().equals(userName) && user.getPassword().equals(password));
         try{
             User user = users.getFirst();
-        }catch (NoSuchElementException e){
+        }catch (EntityNotFoundException e){
             return false;
         }
         return true;
@@ -72,13 +78,13 @@ public class UserService extends VisitorService {
                 Product product = productRepo.read(selectedProductID);
 
                 if (product == null) {
-                    throw new IllegalArgumentException("Product with ID " + selectedProductID + " not found.");
+                    throw new EntityNotFoundException("Product with ID " + selectedProductID + " not found.");
                 }
                 User sender = findByCriteriaHelper(senderUsername, senderPassword);
                 User offerReceiver = userRepo.read(product.getListedBy());
 
                 if (offerReceiver == null) {
-                    throw new IllegalArgumentException("Receiver user for product not found.");
+                    throw new EntityNotFoundException("Receiver user for product not found.");
                 }
 
                 if (!offerReceiver.getUserName().equals(senderUsername) && offeredPrice >= product.getPrice() / 2) {
@@ -89,7 +95,7 @@ public class UserService extends VisitorService {
                 }
 
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error sending offer: " + e.getMessage());
         }
         return false;
@@ -111,7 +117,7 @@ public class UserService extends VisitorService {
                 Offer offer = offerRepo.read(offerId);
 
                 if (offer == null) {
-                    throw new IllegalArgumentException("Offer with ID " + offerId + " not found.");
+                    throw new EntityNotFoundException("Offer with ID " + offerId + " not found.");
                 }
 
                 if (offer.getReceiver() == findByCriteriaHelper(sellerUsername, sellerPassword).getId()) {
@@ -119,7 +125,7 @@ public class UserService extends VisitorService {
                     Product targetedProduct = productRepo.read(offer.getTargetedProduct());
 
                     if (targetedProduct == null) {
-                        throw new IllegalArgumentException("Product in offer not found.");
+                        throw new EntityNotFoundException("Product in offer not found.");
                     }
 
                     targetedProduct.setPrice(offer.getOfferedPrice());
@@ -128,7 +134,7 @@ public class UserService extends VisitorService {
                     return true;
                 }
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error accepting offer: " + e.getMessage());
         }
         return false;
@@ -150,7 +156,7 @@ public class UserService extends VisitorService {
                 Offer offer = offerRepo.read(offerId);
 
                 if (offer == null) {
-                    throw new IllegalArgumentException("Offer with ID " + offerId + " not found.");
+                    throw new EntityNotFoundException("Offer with ID " + offerId + " not found.");
                 }
 
                 if (offer.getReceiver() == findByCriteriaHelper(sellerUsername, sellerPassword).getId()) {
@@ -159,7 +165,7 @@ public class UserService extends VisitorService {
                     return true;
                 }
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error declining offer: " + e.getMessage());
         }
         return false;
@@ -180,7 +186,7 @@ public class UserService extends VisitorService {
             User user = findByCriteriaHelper(username, password);
 
             if (user == null) {
-                throw new IllegalArgumentException("User not found.");
+                throw new EntityNotFoundException("User not found.");
             }
 
             List<Offer> offers = offerRepo.getAll();
@@ -191,7 +197,7 @@ public class UserService extends VisitorService {
             }
 
 
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error displaying made offers: " + e.getMessage());
         }
         return personalOffers;
@@ -211,7 +217,7 @@ public class UserService extends VisitorService {
         try {
             User user = findByCriteriaHelper(username, password);
             if (user == null) {
-                throw new IllegalArgumentException("User not found.");
+                throw new EntityNotFoundException("User not found.");
             }
                 List<Offer> offers = offerRepo.getAll();
                 for (Offer offer : offers) {
@@ -221,7 +227,7 @@ public class UserService extends VisitorService {
                 }
 
 
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error displaying received offers: " + e.getMessage());
         }
 
@@ -242,7 +248,7 @@ public class UserService extends VisitorService {
         try {
             User user = findByCriteriaHelper(username, password);
             if (user == null) {
-                throw new IllegalArgumentException("User not found.");
+                throw new EntityNotFoundException("User not found.");
             }
                 List<Offer> offers = offerRepo.getAll();
                 for (Offer offer : offers) {
@@ -251,7 +257,7 @@ public class UserService extends VisitorService {
                     }
                 }
 
-        }catch(Exception e){
+        }catch(BusinessLogicException e){
             System.err.println("Error displaying all user offers: " + e.getMessage());
         }
         return personalOffers;
@@ -279,7 +285,7 @@ public class UserService extends VisitorService {
                 User buyer = findByCriteriaHelper(buyerUsername, buyerPassword);
 
                 if (buyer == null) {
-                    throw new IllegalArgumentException("Buyer not found.");
+                    throw new EntityNotFoundException("Buyer not found.");
                 }
 
                 Map<Integer, List<Integer>> productsBySeller = new HashMap<>();
@@ -291,7 +297,7 @@ public class UserService extends VisitorService {
                     Product product = productRepo.read(selectedProductsId);
 
                     if (product == null) {
-                        throw new IllegalArgumentException("Product with ID " + selectedProductsId + " not found.");
+                        throw new EntityNotFoundException("Product with ID " + selectedProductsId + " not found.");
                     }
 
                     product.setAvailable(false);
@@ -307,7 +313,7 @@ public class UserService extends VisitorService {
                         Product product = productRepo.read(integer);
 
                         if (product == null) {
-                            throw new IllegalArgumentException("Product with ID " + integer + " not found.");
+                            throw new EntityNotFoundException("Product with ID " + integer + " not found.");
                         }
 
                         totalAmount += product.getPrice();
@@ -319,7 +325,7 @@ public class UserService extends VisitorService {
                 return true;
 
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error placing order: " + e.getMessage());
         }
         return false;
@@ -341,7 +347,7 @@ public class UserService extends VisitorService {
             User user = findByCriteriaHelper(username, password);
 
             if (user == null || !authenticate(username, password)) {
-                throw new IllegalArgumentException("Invalid user credentials.");
+                throw new EntityNotFoundException("Invalid user credentials.");
             }
 
             List<Order> orders = orderRepo.getAll();
@@ -351,7 +357,7 @@ public class UserService extends VisitorService {
                 }
             }
 
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error displaying made orders: " + e.getMessage());
         }
         return personalOrders;
@@ -372,7 +378,7 @@ public class UserService extends VisitorService {
             User user = findByCriteriaHelper(username, password);
 
             if (user == null || !authenticate(username, password)) {
-                throw new IllegalArgumentException("Invalid user credentials.");
+                throw new EntityNotFoundException("Invalid user credentials.");
             }
 
             List<Order> orders = orderRepo.getAll();
@@ -382,7 +388,7 @@ public class UserService extends VisitorService {
                 }
             }
 
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error displaying received orders: " + e.getMessage());
         }
         return personalOrders;
@@ -403,7 +409,7 @@ public class UserService extends VisitorService {
         try {
             User user = findByCriteriaHelper(username, password);
             if (user == null || !authenticate(username, password)) {
-                throw new IllegalArgumentException("Invalid user credentials.");
+                throw new EntityNotFoundException("Invalid user credentials.");
             }
                 List<Order> orders = orderRepo.getAll();
                 for (Order order : orders) {
@@ -412,7 +418,7 @@ public class UserService extends VisitorService {
                     }
                 }
 
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error displaying all users' orders: " + e.getMessage());
         }
         return personalOrders;
@@ -439,7 +445,7 @@ public class UserService extends VisitorService {
                 User reviewee = userRepo.read(revieweeId);
 
                 if (reviewee == null) {
-                    throw new IllegalArgumentException("Reviewee user not found.");
+                    throw new EntityNotFoundException("Reviewee user not found.");
                 }
 
                 if (!reviewee.getUserName().equals(reviewerUsername)) {
@@ -453,7 +459,7 @@ public class UserService extends VisitorService {
 
                 }
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error writing review: " + e.getMessage());
         }
         return false;
@@ -475,13 +481,13 @@ public class UserService extends VisitorService {
             if (authenticate(username, password)) {
                 Review review = reviewRepo.read(reviewId);
                 if (review == null) {
-                    throw new IllegalArgumentException("Review with ID " + reviewId + " not found.");
+                    throw new EntityNotFoundException("Review with ID " + reviewId + " not found.");
                 }
 
                 reviewRepo.delete(reviewId);
                 return true;
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error deleting review: " + e.getMessage());
         }
         return false;
@@ -509,7 +515,7 @@ public class UserService extends VisitorService {
                     }
                 }
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error displaying made personal reviews: " + e.getMessage());
         }
         return personalReviews;
@@ -535,7 +541,7 @@ public class UserService extends VisitorService {
                 Product product = productRepo.read(productId);
 
                 if (product == null) {
-                    throw new IllegalArgumentException("Product with ID " + productId + " not found.");
+                    throw new EntityNotFoundException("Product with ID " + productId + " not found.");
                 }
 
                 if (!user.getFavourites().contains(productId)) {
@@ -547,7 +553,7 @@ public class UserService extends VisitorService {
                     return true;
                 }
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error adding to favorites: " + e.getMessage());
         }
         return false;
@@ -571,7 +577,7 @@ public class UserService extends VisitorService {
                 Product product = productRepo.read(productId);
 
                 if (product == null) {
-                    throw new IllegalArgumentException("Product with ID " + productId + " not found.");
+                    throw new EntityNotFoundException("Product with ID " + productId + " not found.");
                 }
 
                 if (user.getFavourites().contains(productId)) {
@@ -581,7 +587,7 @@ public class UserService extends VisitorService {
                 }
 
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error removing from favorites: " + e.getMessage());
         }
         return false;
@@ -643,7 +649,7 @@ public class UserService extends VisitorService {
                 userRepo.update(seller);
                 return true;
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error listing product: " + e.getMessage());
         }
         return false;
@@ -664,7 +670,7 @@ public class UserService extends VisitorService {
             if (authenticate(username, password)) {
                 User user = findByCriteriaHelper(username, password);
                 if (user == null) {
-                    throw new IllegalArgumentException("User not found.");
+                    throw new EntityNotFoundException("User not found.");
                 }
 
                 for (int i = 0; i < user.getListedProducts().size(); i++) {
@@ -674,9 +680,9 @@ public class UserService extends VisitorService {
                         return true;
                     }
                 }
-                throw new IllegalArgumentException("Product with ID " + productId + " not listed by the user.");
+                throw new EntityNotFoundException("Product with ID " + productId + " not listed by the user.");
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error deleting listed product: " + e.getMessage());
         }
 
@@ -710,7 +716,7 @@ public class UserService extends VisitorService {
         try {
             User user = userRepo.read(userId);
             if (user == null) {
-                throw new IllegalArgumentException("User with ID " + userId + " not found.");
+                throw new EntityNotFoundException("User with ID " + userId + " not found.");
             }
 
             List<Offer> receivedOffers = new ArrayList<>();
@@ -734,7 +740,7 @@ public class UserService extends VisitorService {
                 }
             }
             return ((double) nrOfAcceptedOffers / receivedOffers.size()) * 100;
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error calculating average offer acceptance rate: " + e.getMessage());
             return 0.0;
         }
@@ -760,7 +766,7 @@ public class UserService extends VisitorService {
                     listedProducts.add(product);
                 }
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error retrieving listed products: " + e.getMessage());
         }
         return listedProducts;
@@ -777,7 +783,7 @@ public class UserService extends VisitorService {
         try {
             User user = userRepo.read(userId);
             if (user == null) {
-                throw new IllegalArgumentException("User with ID " + userId + " not found.");
+                throw new EntityNotFoundException("User with ID " + userId + " not found.");
             }
 
             int nrOfNegativeReviews = 0;
@@ -787,7 +793,7 @@ public class UserService extends VisitorService {
                 }
             }
             return nrOfNegativeReviews;
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error counting negative reviews: " + e.getMessage());
             return 0;
         }
@@ -835,7 +841,7 @@ public class UserService extends VisitorService {
                 }
                 return profileReviews;
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error displaying profile reviews: " + e.getMessage());
         }
         return new ArrayList<>();
@@ -888,7 +894,7 @@ public class UserService extends VisitorService {
             score -= getUserNegativeReviews(userId) * 15;
             score -= userRepo.read(userId).getFlaggedActions();
             return score;
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error calculating user trust score: " + e.getMessage());
             return 0;
         }
