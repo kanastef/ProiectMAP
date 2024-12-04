@@ -2,6 +2,8 @@ package org.example.proiect_gradle.Repository.FileRepository;
 
 import org.example.proiect_gradle.Domain.Visitor;
 
+import java.time.LocalDateTime;
+
 public class VisitorFileRepository extends FileRepository<Visitor> {
 
     public VisitorFileRepository(String filename){
@@ -27,7 +29,7 @@ public class VisitorFileRepository extends FileRepository<Visitor> {
             String[] parts = line.split(",");
             int id = Integer.parseInt(parts[0]);
 
-            Visitor visitor = new Visitor();
+            Visitor visitor = new Visitor(LocalDateTime.now());
             visitor.setId(id);
             return visitor;
         }catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {

@@ -19,6 +19,7 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
         this.password = password;
         try {
             connection = DriverManager.getConnection(url, username, password);
+            System.out.println("Connected to database");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -68,6 +69,7 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
             throw new IllegalArgumentException("ENTITY CANNOT BE NULL");
         try{
             PreparedStatement statement = getInsertStatement(connection, entity);
+
             statement.executeUpdate();
         }catch (Exception e){
             throw new RuntimeException(e);
@@ -97,6 +99,4 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
             throw new RuntimeException(e);
         }
     }
-
-
 }
