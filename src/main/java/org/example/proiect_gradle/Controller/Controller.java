@@ -126,7 +126,7 @@ public class Controller {
     }
 
 
-    //Orders
+
     public boolean declineOffer(String username,String password,int offerId){
         return userService.declineOffer(username, password, offerId);
     }
@@ -136,6 +136,8 @@ public class Controller {
 
     }
 
+
+    //Orders
     public List<Order> getMadeOrders(String username, String password){
         return userService.displayMadeOrders(username,password);
     }

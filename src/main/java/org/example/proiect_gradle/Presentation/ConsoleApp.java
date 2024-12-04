@@ -1,6 +1,8 @@
 package org.example.proiect_gradle.Presentation;
 import org.example.proiect_gradle.Controller.Controller;
 import org.example.proiect_gradle.Domain.*;
+import org.example.proiect_gradle.Exceptions.ValidationException;
+
 import java.util.*;
 
 public class ConsoleApp {
@@ -21,15 +23,21 @@ public class ConsoleApp {
             System.out.println("4. Browse users");
             System.out.println("0. Exit");
             System.out.print("Please select an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-            switch (choice) {
-                case 1-> logIn();
-                case 2-> signUp();
-                case 3-> browseProductsVisitor();
-                case 4-> browseUsersVisitor();
-                case 0 -> running = false;
-                default -> System.out.println("Invalid choice. Please try again.");
+
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+                switch (choice) {
+                    case 1 -> logIn();
+                    case 2 -> signUp();
+                    case 3 -> browseProductsVisitor();
+                    case 4 -> browseUsersVisitor();
+                    case 0 -> running = false;
+                    default ->  System.out.println("Invalid input: Please enter a number between 0 and 4.");
+                }
+            } catch (ValidationException e) {
+                System.out.println("Invalid input: Please enter a valid number.");
+                scanner.nextLine();
             }
         }
     }
@@ -37,28 +45,110 @@ public class ConsoleApp {
     //VISITOR
 
     private void signUp() {
-        System.out.println("Please enter your username: ");
-        String username = scanner.nextLine();
-        System.out.println("Please enter your email address: ");
-        String email = scanner.nextLine();
-        System.out.println("Please enter your password: ");
-        String password = scanner.nextLine();
-        System.out.println("Please enter your phone number: ");
-        String phoneNumber = scanner.nextLine();
-        boolean success = controller.createAccount(username, password, email, phoneNumber);
-        if (success){
-            System.out.println("Domain.Account created successfully! Please log in to continue.");
+        String username = null;
+        String email = null;
+        String password = null;
+        String phoneNumber = null;
+
+
+        while (true) {
+            try {
+                System.out.println("Please enter your username: ");
+                username = scanner.nextLine();
+                if (username.isEmpty() || !username.matches("[a-zA-Z0-9_]+")) {
+                    throw new ValidationException("Invalid username: Username must be a non-empty string and contain only letters, numbers, or underscores.");
+                }
+                break;
+            } catch (ValidationException e) {
+                System.out.println(e.getMessage());
+            }
         }
-        else {
+
+
+        while (true) {
+            try {
+                System.out.println("Please enter your email address: ");
+                email = scanner.nextLine();
+                if (email.isEmpty() || !email.matches("^[^@\\s]+@[^@\\s]+$")) {
+                    throw new ValidationException("Invalid email: Email must be a non-empty string and contain no spaces.");
+                }
+                break;
+            } catch (ValidationException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+
+        while (true) {
+            try {
+                System.out.println("Please enter your password: ");
+                password = scanner.nextLine();
+                if (password.isEmpty() || !password.matches("^(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$")) {
+                    throw new ValidationException("Invalid password: Password must be a non-empty string and must be at least 8 characters long, contain at least one uppercase letter and one digit.");
+                }
+                break;
+            } catch (ValidationException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+
+        while (true) {
+            try {
+                System.out.println("Please enter your phone number: ");
+                phoneNumber = scanner.nextLine();
+                if (phoneNumber.isEmpty() || !phoneNumber.matches("\\d{10}")) {
+                    throw new ValidationException("Invalid phone number: Phone number must consist of exactly 10 digits.");
+                }
+                break;
+            } catch (ValidationException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+
+        boolean success = controller.createAccount(username, password, email, phoneNumber);
+        if (success) {
+            System.out.println("Account created successfully! Please log in to continue.");
+        } else {
             System.out.println("Something went wrong. Please try again.");
         }
     }
 
+
     private void logIn() {
-        System.out.println("Please enter your username: ");
-        String username = scanner.nextLine();
-        System.out.println("Please enter your password: ");
-        String password = scanner.nextLine();
+        String username = null;
+        String password = null;
+
+
+        while (true) {
+            try {
+                System.out.println("Please enter your username: ");
+                username = scanner.nextLine();
+                if (username.isEmpty()) {
+                    throw new ValidationException("Username cannot be empty");
+                }
+                break;
+            } catch (ValidationException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+
+        while (true) {
+            try {
+                System.out.println("Please enter your password: ");
+                password = scanner.nextLine();
+                if (password.isEmpty()) {
+                    throw new ValidationException("Password cannot be empty");
+                }
+                break;
+            } catch (ValidationException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+
         int result = controller.logIn(username, password);
         if (result == 1) {
             userMenu(username, password);
@@ -67,7 +157,7 @@ public class ConsoleApp {
             adminMenu(username, password);
         }
         else {
-            System.out.println("Login failed. Please try again.");
+            System.out.println("Something went wrong. Please try again.");
         }
 
     }
@@ -82,13 +172,19 @@ public class ConsoleApp {
             System.out.println("2. Filter Products");
             System.out.println("0. Go Back to Repo.Main Menu");
             System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-            switch (choice) {
-                case 1 -> products = sortProducts();
-                case 2 -> products = filterProducts();
-                case 0 -> browsing = false;
-                default -> System.out.println("Invalid choice. Please try again.");
+
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+                switch (choice) {
+                    case 1 -> products = sortProducts();
+                    case 2 -> products = filterProducts();
+                    case 0 -> browsing = false;
+                    default -> System.out.println("Invalid input: Please enter a number between 0 and 2.");
+                }
+            }catch(ValidationException e){
+                System.out.println("Invalid input: Please enter a valid number.");
+                scanner.nextLine();
             }
         }
     }
@@ -104,14 +200,19 @@ public class ConsoleApp {
             System.out.println("0. Go Back to Repo.Main Menu");
             System.out.print("Choose an option: ");
 
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-            switch (choice) {
-                case 1 -> displayedUsers = sortUsers();
-                case 2 -> displayedUsers = filterUsers();
-                case 3 -> viewUserReviews(displayedUsers);
-                case 0 -> browsing = false;
-                default -> System.out.println("Invalid choice. Please try again.");
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+                switch (choice) {
+                    case 1 -> displayedUsers = sortUsers();
+                    case 2 -> displayedUsers = filterUsers();
+                    case 3 -> viewUserReviews(displayedUsers);
+                    case 0 -> browsing = false;
+                    default -> System.out.println("Invalid input: Please enter a number between 0 and 3.");
+                }
+            }catch(ValidationException e){
+                System.out.println("Invalid input: Please enter a valid number.");
+                scanner.nextLine();
             }
         }
     }
@@ -132,20 +233,26 @@ public class ConsoleApp {
             System.out.println("9. View My Liked Products");
             System.out.println("0. Log Out");
             System.out.print("Select an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-            switch (choice) {
-                case 1 -> browseProductsUser(username, password);
-                case 2 -> browseUsersUser(username, password);
-                case 3 -> viewMyListings(username, password);
-                case 4 -> viewMyOrders(username, password);
-                case 5 -> viewReceivedOrders(username, password);
-                case 6 -> viewOffers(username, password);
-                case 7 -> viewSentOffers(username, password);
-                case 8 -> viewMyReviews(username, password);
-                case 9 -> viewLikes(username, password);
-                case 0 -> loggedIn = false;
-                default -> System.out.println("Invalid choice. Please try again.");
+
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+                switch (choice) {
+                    case 1 -> browseProductsUser(username, password);
+                    case 2 -> browseUsersUser(username, password);
+                    case 3 -> viewMyListings(username, password);
+                    case 4 -> viewMyOrders(username, password);
+                    case 5 -> viewReceivedOrders(username, password);
+                    case 6 -> viewOffers(username, password);
+                    case 7 -> viewSentOffers(username, password);
+                    case 8 -> viewMyReviews(username, password);
+                    case 9 -> viewLikes(username, password);
+                    case 0 -> loggedIn = false;
+                    default -> System.out.println("Invalid input: Please enter a number between 0 and 2.");
+                }
+            }catch(ValidationException e){
+                System.out.println("Invalid input: Please enter a valid number.");
+                scanner.nextLine();
             }
         }
     }
@@ -158,33 +265,49 @@ public class ConsoleApp {
         System.out.println("Would you like to remove a product from your likes?");
         System.out.println("1. Yes");
         System.out.println("2. No");
-        int choice = scanner.nextInt();
-        while (choice != 0) {
-            switch (choice) {
-                case 1 -> removeLike(liked, username, password);
-                case 2 -> {
-                    System.out.println(controller.userService.findByCriteriaHelper(username, password).getFavourites());
+
+        try {
+            int choice = scanner.nextInt();
+            while (choice != 0) {
+                switch (choice) {
+                    case 1 -> removeLike(liked, username, password);
+                    case 2 -> {
+                        System.out.println(controller.userService.findByCriteriaHelper(username, password).getFavourites());
+                    }
+                    default -> System.out.println("Invalid input: Please enter a number between 1 and 2.");
                 }
-                default -> System.out.println("Invalid choice. Please try again.");
+                choice = scanner.nextInt();
             }
-            choice = scanner.nextInt();
+        }catch(ValidationException e){
+            System.out.println("Invalid input: Please enter a valid number.");
+            scanner.nextLine();
         }
     }
 
+
     private void removeLike(List<Product> likedProducts, String username, String password) {
         System.out.println("Enter the ID of the product you would like to delete: ");
-        int id = scanner.nextInt();
-        if (likedProducts.stream().map(Product::getId).anyMatch(x -> x.equals(id))) {
-            boolean success = controller.removeFromLiked(username, password, id);
-            if (success) {
-                System.out.println("Product deleted successfully!");
-            }
-            else {
-                System.out.println("Something went wrong.");
-            }
+
+        try {
+            int id = scanner.nextInt();
+            if (likedProducts.stream().map(Product::getId).anyMatch(x -> x.equals(id))) {
+                boolean success = controller.removeFromLiked(username, password, id);
+                if (success) {
+                    System.out.println("Product deleted successfully!");
+                } else {
+                    System.out.println("Something went wrong.");
+                }
+            } else System.out.println("Invalid ID.");
+        }catch(ValidationException e){
+            System.out.println("Invalid input: Please enter a valid number.");
+            scanner.nextLine();
         }
-        else System.out.println("Invalid ID.");
     }
+
+    //pana aici am modificat
+
+
+
 
     private void viewMyReviews(String username, String password) {
         System.out.println("1. View Reviews Left by You");

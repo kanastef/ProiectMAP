@@ -3,6 +3,8 @@ package org.example.proiect_gradle.Service;
 import java.util.*;
 
 import org.example.proiect_gradle.Domain.*;
+import org.example.proiect_gradle.Exceptions.BusinessLogicException;
+import org.example.proiect_gradle.Exceptions.EntityNotFoundException;
 import org.example.proiect_gradle.Repository.FileRepository.FileRepository;
 
 public class AdminService extends VisitorService {
@@ -42,7 +44,7 @@ public class AdminService extends VisitorService {
         List<Admin> admins = adminRepo.findByCriteria(admin -> admin.getUserName().equals(username) && admin.getPassword().equals(password));
         try{
             Admin admin = admins.getFirst();
-        }catch (NoSuchElementException e){
+        }catch (EntityNotFoundException e){
             return false;
         }
 
@@ -67,11 +69,11 @@ public class AdminService extends VisitorService {
                         return true;
                     }
                 }
-                throw new IllegalArgumentException("User with ID " + userId + " does not exist.");
+                throw new EntityNotFoundException("User with ID " + userId + " does not exist.");
             } else {
-                throw new SecurityException("Authentication failed for admin: " + adminUsername);
+                throw new EntityNotFoundException("Authentication failed for admin: " + adminUsername);
             }
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error deleting user: " + e.getMessage());
         }
 
@@ -96,17 +98,17 @@ public class AdminService extends VisitorService {
                 if(review.getId()==reviewId){
                     User user = userRepo.read(reviewRepo.read(reviewId).getReviewer());
                     if (user == null) {
-                        throw new IllegalStateException("Reviewer for review ID " + reviewId + " does not exist.");
+                        throw new EntityNotFoundException("Reviewer for review ID " + reviewId + " does not exist.");
                     }
                     user.incrementFlaggedActions();
                     reviewRepo.delete(reviewId);
                     return true;
                 }
             }
-            throw new IllegalArgumentException("Review with ID " + reviewId + " does not exist.");
+            throw new EntityNotFoundException("Review with ID " + reviewId + " does not exist.");
         }
         }
-        catch (Exception e) {
+        catch (BusinessLogicException e) {
             System.err.println("Error deleting review: " + e.getMessage());
         }
 
@@ -134,9 +136,9 @@ public class AdminService extends VisitorService {
                     return true;
                 }
             }
-            throw new IllegalArgumentException("Product with ID " + productId + " does not exist.");
+            throw new EntityNotFoundException("Product with ID " + productId + " does not exist.");
         }
-        } catch (Exception e) {
+        } catch (BusinessLogicException e) {
             System.err.println("Error deleting product: " + e.getMessage());
         }
         return false;
@@ -156,21 +158,21 @@ public class AdminService extends VisitorService {
 
         try{
         if (authenticate(adminUsername,adminPassword)) {
-            List<Product> products=productRepo.getAll();
-            Product targetedProduct=productRepo.read(productId);
+            List<Product> products = productRepo.getAll();
+            Product targetedProduct = productRepo.read(productId);
 
             if (targetedProduct == null) {
-                throw new IllegalArgumentException("Product with ID " + productId + " does not exist.");
+                throw new EntityNotFoundException("Product with ID " + productId + " does not exist.");
             }
 
-            for(Product product:products){
-                if(product.equals(targetedProduct)){
+            for (Product product : products) {
+                if (product.equals(targetedProduct)) {
                     targetedProduct.setCategory(newCategory);
                     int userId = productRepo.read(productId).getListedBy();
                     User user = userRepo.read(userId);
 
                     if (user == null) {
-                        throw new IllegalStateException("User listing product ID " + productId + " does not exist.");
+                        throw new EntityNotFoundException("User listing product ID " + productId + " does not exist.");
                     }
 
                     user.incrementFlaggedActions();
@@ -178,9 +180,9 @@ public class AdminService extends VisitorService {
                     return true;
                 }
             }
-            throw new IllegalStateException("Failed to update category for product ID " + productId);
+
         }
-        } catch (Exception e) {
+        } catch (BusinessLogicException e) {
             System.err.println("Error updating category: " + e.getMessage());
         }
         return false;
@@ -255,7 +257,7 @@ public class AdminService extends VisitorService {
                             double productPrice = product.getPrice();
                             incomeByCategory.merge(categoryName, productPrice, Double::sum);
                         }
-                    } catch (IllegalStateException e) {
+                    } catch (EntityNotFoundException e) {
                         System.err.println("Error processing product ID " + productId + ": " + e.getMessage());
                     }
                 }
@@ -270,7 +272,7 @@ public class AdminService extends VisitorService {
             }
             return sortedIncomeByCategory;
 
-        }catch (Exception e) {
+        }catch (BusinessLogicException e) {
             System.err.println("Error sorting categories by income: " + e.getMessage());
             return Map.of();
         }
