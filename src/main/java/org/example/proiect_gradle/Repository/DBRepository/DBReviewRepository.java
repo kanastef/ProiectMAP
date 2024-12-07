@@ -9,7 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DBReviewRepository extends DBRepository<Review> {
-    public int currentId = 1;
 
     public DBReviewRepository(String url, String username, String password) {
         super(url, username, password);
@@ -33,8 +32,6 @@ public class DBReviewRepository extends DBRepository<Review> {
         stmt.setDouble(2, item.getGrade());
         stmt.setInt(3, item.getReviewer());
         stmt.setInt(4, item.getReviewee());
-        item.setId(currentId);
-        currentId++;
         return stmt;
     }
 

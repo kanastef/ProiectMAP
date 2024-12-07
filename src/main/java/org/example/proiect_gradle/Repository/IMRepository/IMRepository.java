@@ -48,15 +48,12 @@ public class IMRepository<T extends Identifiable> implements IRepository<T> {
         return new ArrayList<>(storage.values());
     }
 
+    @Override
     public List<T> findByCriteria(Predicate<T> predicate) {
         return storage.values().stream()
                 .filter(predicate)
                 .collect(Collectors.toList());
     }
-
-
-
-
 
 }
 

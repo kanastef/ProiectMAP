@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 public class DBVisitorRepository extends DBRepository<Visitor> {
-    public int currentId = 1;
 
     public DBVisitorRepository(String url, String username, String password) {
         super(url, username, password);
@@ -31,8 +30,6 @@ public class DBVisitorRepository extends DBRepository<Visitor> {
                 PreparedStatement.RETURN_GENERATED_KEYS
         );
         stmt.setTimestamp(1, java.sql.Timestamp.valueOf(item.getVisitDate()));
-        item.setId(currentId);
-        currentId++;
         return stmt;
     }
 

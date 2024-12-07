@@ -14,11 +14,12 @@ import org.example.proiect_gradle.Exceptions.CustomException;
 
 import org.example.proiect_gradle.Domain.*;
 import org.example.proiect_gradle.Repository.FileRepository.FileRepository;
+import org.example.proiect_gradle.Repository.IRepository;
 
 public class UserService extends VisitorService {
 
-    FileRepository<Order> orderRepo;
-    FileRepository<Offer> offerRepo;
+    protected final IRepository<Order> orderRepo;
+    protected final IRepository<Offer> offerRepo;
 
 
 
@@ -32,9 +33,9 @@ public class UserService extends VisitorService {
      * @param orderRepo the repository to handle order-related operations
      * @param offerRepo the repository to handle offer-related operations
      */
-    public UserService(FileRepository<User> userRepo, FileRepository<Product> productRepo,
-                       FileRepository<Review> reviewRepo, FileRepository<Category> categoryRepo,
-                       FileRepository<Order> orderRepo, FileRepository<Offer> offerRepo) {
+    public UserService(IRepository<User> userRepo, IRepository<Product> productRepo,
+                       IRepository<Review> reviewRepo, IRepository<Category> categoryRepo,
+                       IRepository<Order> orderRepo, IRepository<Offer> offerRepo) {
         super(userRepo, productRepo, reviewRepo, categoryRepo);
         this.orderRepo=orderRepo;
         this.offerRepo=offerRepo;
@@ -546,6 +547,7 @@ public class UserService extends VisitorService {
 
                 if (!user.getFavourites().contains(productId)) {
                     user.getFavourites().add(productId);
+                    System.out.println(user.getFavourites());
                     userRepo.update(user);
                     int newNrOfLikes = product.getNrLikes() + 1;
                     product.setNrLikes(newNrOfLikes);
@@ -579,10 +581,13 @@ public class UserService extends VisitorService {
                 if (product == null) {
                     throw new EntityNotFoundException("Product with ID " + productId + " not found.");
                 }
-
+                List<Integer> favs = user.getFavourites();
                 if (user.getFavourites().contains(productId)) {
-                    user.getFavourites().remove(productId);
+                    user.getFavourites().remove((Integer)productId);
                     userRepo.update(user);
+                    int newNrOfLikes = product.getNrLikes() - 1;
+                    product.setNrLikes(newNrOfLikes);
+                    productRepo.update(product);
                     return true;
                 }
 

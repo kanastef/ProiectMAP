@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 public class DBOrderRepository extends DBRepository<Order>{
-    public int currentId = 1;
 
     public DBOrderRepository(String url, String username, String password) {
         super(url, username, password);
@@ -57,7 +56,7 @@ public class DBOrderRepository extends DBRepository<Order>{
     }
 
     public PreparedStatement getInsertStatement(Connection c, Order item) throws SQLException {
-        PreparedStatement stmt = c.prepareStatement("INSERT INTO Orders(status, totalPrice, shippingAddress, buyerId, sellerId) VALUES(?, ?, ?, ?, ?)",
+        PreparedStatement stmt = c.prepareStatement("INSERT INTO Orders(stat, totalPrice, shippingAddress, buyerId, sellerId) VALUES(?, ?, ?, ?, ?)",
                 PreparedStatement.RETURN_GENERATED_KEYS
         );
         stmt.setString(1, item.getStatus());
@@ -65,12 +64,10 @@ public class DBOrderRepository extends DBRepository<Order>{
         stmt.setString(3, item.getShippingAddress());
         stmt.setInt(4, item.getBuyer());
         stmt.setInt(5, item.getSeller());
-        item.setId(currentId);
-        currentId++;
         return stmt;
     }
 
-    public void insertOrderedProducts(Connection c, int orderId, List<Integer> productIds) throws SQLException {
+    public PreparedStatement insertOrderedProducts(Connection c, int orderId, List<Integer> productIds) throws SQLException {
         PreparedStatement stmt = c.prepareStatement("INSERT INTO OrderedProducts(orderId, productId) VALUES(?, ?)");
 
         for (int productId : productIds) {
@@ -79,10 +76,11 @@ public class DBOrderRepository extends DBRepository<Order>{
             stmt.addBatch();
         }
         stmt.executeBatch();
+        return stmt;
     }
 
     public PreparedStatement getUpdateStatement(Connection c, Order item) throws SQLException {
-        PreparedStatement stmt = c.prepareStatement("UPDATE Orders SET status = ?, totalPrice = ?, shippingAddress = ?, buyerId = ?, sellerId = ? WHERE id = ?");
+        PreparedStatement stmt = c.prepareStatement("UPDATE Orders SET stat = ?, totalPrice = ?, shippingAddress = ?, buyerId = ?, sellerId = ? WHERE id = ?");
         stmt.setString(1, item.getStatus());
         stmt.setDouble(2, item.getTotalPrice());
         stmt.setString(3, item.getShippingAddress());
@@ -115,7 +113,7 @@ public class DBOrderRepository extends DBRepository<Order>{
 
     public Order createEntity(ResultSet resultSet) throws SQLException {
         int id = resultSet.getInt("id");
-        String status = resultSet.getString("status");
+        String status = resultSet.getString("stat");
         double totalPrice = resultSet.getDouble("totalPrice");
         String shippingAddress = resultSet.getString("shippingAddress");
         int buyerId = resultSet.getInt("buyerId");
@@ -126,4 +124,38 @@ public class DBOrderRepository extends DBRepository<Order>{
         order.setTotalPrice(totalPrice);
         return order;
     }
+
+    @Override
+    public void create(Order entity) {
+        if(entity==null)
+            throw new IllegalArgumentException("ENTITY CANNOT BE NULL");
+        try{
+            PreparedStatement statement1 = getInsertStatement(connection, entity);
+            String strStatement = statement1.toString().split("Statement:")[1];
+            statement1.executeUpdate(strStatement, PreparedStatement.RETURN_GENERATED_KEYS);
+            ResultSet rs = statement1.getGeneratedKeys();
+            rs.next();
+            int id = rs.getInt(1);
+            entity.setId(id);
+            PreparedStatement statement2 = insertOrderedProducts(connection, entity.getId(), entity.getProducts());
+            String strStatement2 = statement2.toString().split("Statement:")[1];
+            statement2.executeUpdate(strStatement2, PreparedStatement.RETURN_GENERATED_KEYS);
+        } catch (Exception e){
+            throw new IllegalArgumentException("ERROR CREATING ORDER");
+        }
+    }
+
+//    @Override
+//    public void update(Order entity) {
+//        try {
+//            Order object = read(entity.getId());
+//            if (object != null) {
+//                PreparedStatement statement = getUpdateStatement(connection, entity);
+//                statement.executeUpdate();
+//
+//            }
+//        } catch (Exception e){
+//            throw new IllegalArgumentException("ERROR UPDATING ORDER");
+//        }
+//    }
 }

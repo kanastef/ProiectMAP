@@ -6,11 +6,12 @@ import org.example.proiect_gradle.Domain.*;
 import org.example.proiect_gradle.Exceptions.BusinessLogicException;
 import org.example.proiect_gradle.Exceptions.EntityNotFoundException;
 import org.example.proiect_gradle.Repository.FileRepository.FileRepository;
+import org.example.proiect_gradle.Repository.IRepository;
 
 public class AdminService extends VisitorService {
-    private final FileRepository<Admin> adminRepo;
-    private final FileRepository<Category> categoryRepo;
-    private final FileRepository<Order> orderRepo;
+    protected final IRepository<Admin> adminRepo;
+    protected final IRepository<Category> categoryRepo;
+    protected final IRepository<Order> orderRepo;
 
 
 
@@ -24,9 +25,9 @@ public class AdminService extends VisitorService {
      * @param adminRepo the repository to handle admin-related operations
      * @param categoryRepo the repository to handle category-related operations
      */
-    public AdminService(FileRepository<User> userRepo, FileRepository<Product> productRepo,
-                        FileRepository<Review> reviewRepo, FileRepository<Admin> adminRepo,
-                        FileRepository<Category> categoryRepo, FileRepository<Order> orderRepo) {
+    public AdminService(IRepository<User> userRepo, IRepository<Product> productRepo,
+                        IRepository<Review> reviewRepo, IRepository<Admin> adminRepo,
+                        IRepository<Category> categoryRepo, IRepository<Order> orderRepo) {
         super(userRepo, productRepo, reviewRepo, categoryRepo);
         this.adminRepo = adminRepo;
         this.categoryRepo=categoryRepo;

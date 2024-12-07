@@ -10,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DBCategoryRepository extends DBRepository<Category> {
-    public int currentId = 1;
 
     public DBCategoryRepository(String url, String username, String password) {
         super(url, username, password);
@@ -30,8 +29,6 @@ public class DBCategoryRepository extends DBRepository<Category> {
     public PreparedStatement getInsertStatement(Connection c, Category item) throws SQLException {
         PreparedStatement stmt = c.prepareStatement("INSERT INTO categories(name) VALUES(?)");
         stmt.setString(1, item.getName().toString());
-        item.setId(currentId);
-        currentId++;
         return stmt;
     }
 

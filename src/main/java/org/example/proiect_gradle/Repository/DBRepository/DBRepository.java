@@ -6,6 +6,7 @@ import org.example.proiect_gradle.Repository.IRepository;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 public abstract class DBRepository<T extends Identifiable> implements IRepository<T> {
     private final String url;
@@ -69,8 +70,12 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
             throw new IllegalArgumentException("ENTITY CANNOT BE NULL");
         try{
             PreparedStatement statement = getInsertStatement(connection, entity);
-
-            statement.executeUpdate();
+            String strStatement = statement.toString().split("Statement:")[1];
+            statement.executeUpdate(strStatement, Statement.RETURN_GENERATED_KEYS);
+            ResultSet resultSet = statement.getGeneratedKeys();
+            resultSet.next();
+            int id = resultSet.getInt(1);
+            entity.setId(id);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
@@ -99,4 +104,18 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public List<T> findByCriteria(Predicate<T> predicate) {
+        List<T> matchingObjects = new ArrayList<>();
+        List<T> allEntities = getAll();
+
+        for (T entity : allEntities) {
+            if (predicate.test(entity)) {
+                matchingObjects.add(entity);
+            }
+        }
+        return matchingObjects;
+    }
+
 }

@@ -78,7 +78,6 @@ public class DBUserRepository extends DBRepository<User> {
     public PreparedStatement getDeleteStatement(Connection c, int id) throws SQLException {
         PreparedStatement stmt = c.prepareStatement("DELETE FROM Users WHERE id = ?");
         stmt.setInt(1, id);
-        clearLikedProducts(c, id);
         return stmt;
     }
 
@@ -95,16 +94,32 @@ public class DBUserRepository extends DBRepository<User> {
         stmt.executeUpdate();
     }
 
+    private void syncLikedProducts(Connection connection, User user) throws SQLException {
+        List<Integer> currentLikedProducts = getLikedProductsForUser(user.getId(), connection);
+        List<Integer> productsToAdd = new ArrayList<>(user.getFavourites());
+        productsToAdd.removeAll(currentLikedProducts);
+        List<Integer> productsToRemove = new ArrayList<>(currentLikedProducts);
+        productsToRemove.removeAll(user.getFavourites());
+        for (int productId : productsToAdd) {
+            addLikedProduct(connection, user.getId(), productId);
+        }
+        for (int productId : productsToRemove) {
+            removeLikedProduct(connection, user.getId(), productId);
+        }
+    }
+
     public User createEntity(ResultSet resultSet) throws SQLException {
         User user = new User(resultSet.getString("userName"),
                 resultSet.getString("password"),
                 resultSet.getString("email"), resultSet.getString("phone"),
                 resultSet.getDouble("score"));
+        user.setId(resultSet.getInt("id"));
+        user.setFavourites(getLikedProductsForUser(user.getId(), connection));
         return user;
     }
 
     public User findByCriteria(String username, String password, Connection c) throws SQLException {
-        String query = "SELECT * FROM Users WHERE userName = ? AND password = ?";
+        String query = "SELECT * FROM users WHERE userName = ? AND password = ?";
         try (PreparedStatement stmt = c.prepareStatement(query)) {
             stmt.setString(1, username);
             stmt.setString(2, password);
@@ -116,5 +131,16 @@ public class DBUserRepository extends DBRepository<User> {
             }
         }
         return null;
+    }
+
+    @Override
+    public void update(User entity) {
+        try{
+            PreparedStatement statement = getUpdateStatement(connection, entity);
+            statement.executeUpdate();
+            syncLikedProducts(connection, entity);
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
     }
 }

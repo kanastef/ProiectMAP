@@ -52,6 +52,10 @@ public class User extends Account implements Identifiable {
         return nrOfFlaggedActions;
     }
 
+    public void setFavourites(List<Integer> favourites) {
+        this.favourites = favourites;
+    }
+
     @Override
     public String toString() {
         return "User{" +
