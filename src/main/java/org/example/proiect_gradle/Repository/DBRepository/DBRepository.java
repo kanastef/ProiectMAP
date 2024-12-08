@@ -1,7 +1,12 @@
 package org.example.proiect_gradle.Repository.DBRepository;
 
 import org.example.proiect_gradle.Domain.Identifiable;
+import org.example.proiect_gradle.Exceptions.CustomException;
 import org.example.proiect_gradle.Repository.IRepository;
+import org.example.proiect_gradle.Exceptions.DatabaseException;
+import org.example.proiect_gradle.Exceptions.EntityNotFoundException;
+
+
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -26,11 +31,11 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
         }
     }
 
-    public abstract PreparedStatement getSelectOneStatement(Connection c, int id) throws SQLException;
-    public abstract PreparedStatement getSelectAllStatement(Connection c) throws SQLException;
-    public abstract PreparedStatement getInsertStatement(Connection c, T item) throws SQLException;
-    public abstract PreparedStatement getUpdateStatement(Connection c, T item) throws SQLException;
-    public abstract PreparedStatement getDeleteStatement(Connection c, int id) throws SQLException;
+    public abstract PreparedStatement getSelectOneStatement(Connection c, int id) throws DatabaseException;
+    public abstract PreparedStatement getSelectAllStatement(Connection c) throws DatabaseException;
+    public abstract PreparedStatement getInsertStatement(Connection c, T item) throws DatabaseException;
+    public abstract PreparedStatement getUpdateStatement(Connection c, T item) throws DatabaseException;
+    public abstract PreparedStatement getDeleteStatement(Connection c, int id) throws DatabaseException;
 
     public abstract T createEntity(ResultSet resultSet) throws SQLException;
 
@@ -43,7 +48,7 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
             return createEntity(resultSet);
         }
         catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseException(e.getMessage());
         }
     }
 
@@ -60,14 +65,14 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
             return result;
         }
         catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseException(e.getMessage());
         }
     }
 
     @Override
     public void create(T entity) {
         if(entity==null)
-            throw new IllegalArgumentException("ENTITY CANNOT BE NULL");
+            throw new EntityNotFoundException("ENTITY CANNOT BE NULL");
         try{
             PreparedStatement statement = getInsertStatement(connection, entity);
             String strStatement = statement.toString().split("Statement:")[1];
@@ -77,7 +82,7 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
             int id = resultSet.getInt(1);
             entity.setId(id);
         }catch (Exception e){
-            throw new RuntimeException(e);
+            throw new DatabaseException(e.getMessage());
         }
     }
 
@@ -87,7 +92,7 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
             PreparedStatement statement = getUpdateStatement(connection, entity);
             statement.executeUpdate();
         }catch (Exception e){
-            throw new RuntimeException(e);
+            throw new DatabaseException(e.getMessage());
         }
     }
 
@@ -101,7 +106,7 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
             }
             return entity;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseException(e.getMessage());
         }
     }
 
