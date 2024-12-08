@@ -90,7 +90,7 @@ public class Controller {
         else return new ArrayList<>();
     }
 
-    public List<Product> filterProductsByPriceRange(int minPrice, int maxPrice) {
+    public List<Product> filterProductsByPriceRange(double minPrice, double maxPrice) {
         if (minPrice <= maxPrice) {
             return visitorService.searchProductsByPriceRange(minPrice, maxPrice);
         }

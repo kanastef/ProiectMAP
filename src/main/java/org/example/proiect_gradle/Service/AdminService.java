@@ -42,13 +42,7 @@ public class AdminService extends VisitorService {
      */
     public boolean authenticate(String username, String password) {
         List<Admin> admins = adminRepo.findByCriteria(admin -> admin.getUserName().equals(username) && admin.getPassword().equals(password));
-        try{
-            Admin admin = admins.getFirst();
-        }catch (EntityNotFoundException e){
-            return false;
-        }
-
-        return true;
+        return !admins.isEmpty();
     }
 
     /**

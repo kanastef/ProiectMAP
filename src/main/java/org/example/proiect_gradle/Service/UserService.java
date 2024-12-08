@@ -51,12 +51,7 @@ public class UserService extends VisitorService {
      */
     public boolean authenticate(String userName, String password){
         List<User> users = userRepo.findByCriteria(user -> user.getUserName().equals(userName) && user.getPassword().equals(password));
-        try{
-            User user = users.getFirst();
-        }catch (EntityNotFoundException e){
-            return false;
-        }
-        return true;
+        return !users.isEmpty();
     }
 
 
