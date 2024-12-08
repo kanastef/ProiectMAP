@@ -8,19 +8,20 @@ import org.example.proiect_gradle.Domain.Product;
 import org.example.proiect_gradle.Domain.Review;
 import org.example.proiect_gradle.Domain.User;
 import org.example.proiect_gradle.Repository.FileRepository.FileRepository;
+import org.example.proiect_gradle.Repository.IRepository;
 
 public class VisitorService {
-    protected final FileRepository<User> userRepo;
-    protected final FileRepository<Product> productRepo;
-    protected final FileRepository<Review> reviewRepo;
-    protected final FileRepository<Category> categoryRepo;
+    protected final IRepository<User> userRepo;
+    protected final IRepository<Product> productRepo;
+    protected final IRepository<Review> reviewRepo;
+    protected final IRepository<Category> categoryRepo;
 
     /**
      * Service for managing visitor interactions, such as user, product, and review searches,
      * sorting, and account creation.
      */
-    public VisitorService(FileRepository<User> userRepo, FileRepository<Product> productRepo,
-                          FileRepository<Review> reviewRepo, FileRepository<Category> categoryRepo) {
+    public VisitorService(IRepository<User> userRepo, IRepository<Product> productRepo,
+                          IRepository<Review> reviewRepo, IRepository<Category> categoryRepo) {
         this.userRepo = userRepo;
         this.productRepo = productRepo;
         this.reviewRepo = reviewRepo;
