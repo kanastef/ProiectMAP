@@ -28,7 +28,7 @@ public class Main {
 //        String likedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/likedProducts.txt";
 //        String listedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/listedProducts.txt";
 //        String orderedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/orderedProducts.txt";
-//        VisitorFileRepository visitorRepo = new VisitorFileRepository(visitorsFilename);
+//        VisitorFileRepository vRepo = new VisitorFileRepository(visitorsFilename);
 //        UserFileRepository userRepo = new UserFileRepository(userFilename, listedProducts, likedProducts);
 //        ProductFileRepository productRepo = new ProductFileRepository(productFilename);
 //        CategoryFileRepository categoryRepo = new CategoryFileRepository(categoriesFilename);
@@ -49,6 +49,8 @@ public class Main {
         AdminService adminService = new AdminService(userRepo, productRepo, reviewRepo, adminRepo, categoryRepo, orderRepo);
         Controller controller = new Controller(adminService, userService, visitorService);
         ConsoleApp console = new ConsoleApp(controller);
+
+
 
 
         Category categoryTops = new Category(CategoryName.TOPS);
@@ -79,6 +81,7 @@ public class Main {
 
         visitorRepo.create(v1);
         visitorRepo.create(v2);
+
 
 //        //Users
         User u1= new User("LisaTeak","xyz987","lisateak@gmail.com","0747558114",4.5);
