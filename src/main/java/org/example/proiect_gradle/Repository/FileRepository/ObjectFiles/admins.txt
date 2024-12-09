@@ -1,3 +1,0 @@
-1,JohnDoe,qwerty1234,johnedoe@email.com,0747896547
-2,JaneSmith,1234abc,janesmith@email.com,0748596321
-3,MikeSteel,a1b2c3d4,mikesteel@email.com,0748693214

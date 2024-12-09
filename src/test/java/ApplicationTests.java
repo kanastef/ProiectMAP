@@ -59,15 +59,15 @@ public class ApplicationTests {
     UserService userService = new UserService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository, dbOrderRepository, dbOfferRepository);
     AdminService adminService = new AdminService(dbUserRepository, dbProductRepository, dbReviewRepository, dbAdminRepository, dbCategoryRepository, dbOrderRepository);
     Controller controller = new Controller(adminService, userService, visitorService);
-    ConsoleApp console = new ConsoleApp(controller);
+    //ConsoleApp console = new ConsoleApp(controller);
 
 
     @Test
     public void testCrudUser() {
-        User user1 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
         List<IRepository<User>> repositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
 
         for(IRepository<User> repository : repositories) {
+            User user1 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
 
             //Test Create
             repository.create(user1);
@@ -103,10 +103,10 @@ public class ApplicationTests {
     @Test
     public void testCrudAdmin(){
 
-        Admin admin1 =new Admin("AdamBeckner","Password1","adambeckner@email.com","0789447512");
         List<IRepository<Admin>> repositories=List.of(adminIMRepository,adminFileRepository,dbAdminRepository);
 
         for(IRepository<Admin> repository:repositories){
+            Admin admin1 =new Admin("AdamBeckner","Password1","adambeckner@email.com","0789447512");
 
             //Test Create
             repository.create(admin1);
@@ -138,10 +138,10 @@ public class ApplicationTests {
     @Test
     public void testCrudVisitor() {
         LocalDateTime now = LocalDateTime.now();
-        Visitor visitor1 = new Visitor(now);
         List<IRepository<Visitor>> repositories = List.of(visitorIMRepository, visitorFileRepository, dbVisitorRepository);
 
         for (IRepository<Visitor> repository : repositories) {
+            Visitor visitor1 = new Visitor(now);
 
             // Test Create
             repository.create(visitor1);
@@ -170,16 +170,14 @@ public class ApplicationTests {
     public void testCrudProduct() {
 
         User user1 = new User("JeremyReef", "Password2", "jeremyreef@gamil.com", "0784556211", 0.0);
-        Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, user1.getId());
 
 
         List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
         List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
         List<IRepository<Category>> categoryRepositories = List.of(categoryFileRepository, dbCategoryRepository);
 
-
         Category categoryTops = new Category(CategoryName.TOPS);
-        product1.setCategory(categoryTops.getId());
+
 
 
         for (IRepository<Category> categoryRepository : categoryRepositories) {
@@ -200,6 +198,8 @@ public class ApplicationTests {
 
         for (IRepository<Product> productRepository : productRepositories) {
 
+            Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, user1.getId());
+            product1.setCategory(categoryTops.getId());
             // Test Create
             productRepository.create(product1);
             Product retrievedProduct = productRepository.read(product1.getId());
@@ -237,10 +237,11 @@ public class ApplicationTests {
 
     @Test
     public void testCrudCategory() {
-        Category category1 = new Category(CategoryName.OUTERWEAR);
+
         List<IRepository<Category>> repositories = List.of(categoryFileRepository, dbCategoryRepository);
 
         for (IRepository<Category> repository : repositories) {
+            Category category1 = new Category(CategoryName.OUTERWEAR);
 
             // Test Create
             repository.create(category1);
@@ -271,7 +272,7 @@ public class ApplicationTests {
         Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, user1.getId());
         Category categoryTops = new Category(CategoryName.TOPS);
         product1.setCategory(categoryTops.getId());
-        Review review1 = new Review(4.5, "Excellent Service", user2.getId(), user1.getId());
+
 
 
         List<IRepository<Review>> reviewRepositories = List.of(reviewIMRepository, reviewFileRepository, dbReviewRepository);
@@ -301,6 +302,8 @@ public class ApplicationTests {
 
 
         for (IRepository<Review> reviewRepository : reviewRepositories) {
+
+            Review review1 = new Review(4.5, "Excellent Service", user2.getId(), user1.getId());
             // Test Create
             reviewRepository.create(review1);
             Review retrievedReview = reviewRepository.read(review1.getId());
@@ -360,7 +363,6 @@ public class ApplicationTests {
         product1.setCategory(categoryTops.getId());
 
 
-        Offer offer1 = new Offer("Would you do 13.50 for this?", 15.50, product1.getId(), user2.getId(), user1.getId());
 
 
         List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository, dbOfferRepository);
@@ -398,6 +400,8 @@ public class ApplicationTests {
 
 
         for (IRepository<Offer> offerRepository : offerRepositories) {
+            Offer offer1 = new Offer("Would you do 13.50 for this?", 15.50, product1.getId(), user2.getId(), user1.getId());
+
             // Test Create
             offerRepository.create(offer1);
             Offer retrievedOffer = offerRepository.read(offer1.getId());
@@ -461,7 +465,6 @@ public class ApplicationTests {
         product1.setCategory(categoryTops.getId());
 
 
-        Order order1 = new Order(List.of(product1.getId()), "pending", "Strada Test", user2.getId(), user1.getId());
 
 
         List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository, dbOrderRepository);
@@ -500,6 +503,9 @@ public class ApplicationTests {
 
 
         for (IRepository<Order> orderRepository : orderRepositories) {
+            Order order1 = new Order(List.of(product1.getId()), "pending", "Strada Test", user2.getId(), user1.getId());
+
+
             // Test Create
             orderRepository.create(order1);
             Order retrievedOrder = orderRepository.read(order1.getId());
