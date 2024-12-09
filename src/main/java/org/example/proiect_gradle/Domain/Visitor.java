@@ -6,14 +6,6 @@ public class Visitor implements Identifiable{
     private int id;
     private LocalDateTime visitDate;
 
-    public LocalDateTime getVisitDate() {
-        return visitDate;
-    }
-
-    public void setVisitDate(LocalDateTime visitDate) {
-        this.visitDate = visitDate;
-    }
-
     public Visitor(LocalDateTime visitDate) {
         this.visitDate = visitDate;
     }
@@ -25,6 +17,14 @@ public class Visitor implements Identifiable{
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public LocalDateTime getVisitDate() {
+        return visitDate;
+    }
+
+    public void setVisitDate(LocalDateTime visitDate) {
+        this.visitDate = visitDate;
     }
 
 
