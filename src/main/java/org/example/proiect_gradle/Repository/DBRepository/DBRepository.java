@@ -44,8 +44,11 @@ public abstract class DBRepository<T extends Identifiable> implements IRepositor
         try {
             PreparedStatement statement = getSelectOneStatement(connection, id);
             ResultSet resultSet = statement.executeQuery();
-            resultSet.next();
-            return createEntity(resultSet);
+            if (resultSet.next()) {
+                return createEntity(resultSet);
+            } else {
+                return null;
+            }
         }
         catch (SQLException e) {
             throw new DatabaseException(e.getMessage());

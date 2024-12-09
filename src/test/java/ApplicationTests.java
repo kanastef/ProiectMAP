@@ -137,7 +137,7 @@ public class ApplicationTests {
 
     @Test
     public void testCrudVisitor() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.of(2023, 7, 15, 14, 37, 25);
         List<IRepository<Visitor>> repositories = List.of(visitorIMRepository, visitorFileRepository, dbVisitorRepository);
 
         for (IRepository<Visitor> repository : repositories) {
@@ -269,9 +269,9 @@ public class ApplicationTests {
         // Create User and Product
         User user1 = new User("JeremyReef", "Password2", "jeremyreef@gamil.com", "0784556211", 0.0);
         User user2 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
-        Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, user1.getId());
+        Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, 1);
         Category categoryTops = new Category(CategoryName.TOPS);
-        product1.setCategory(categoryTops.getId());
+        product1.setCategory(1);
 
 
 
@@ -280,14 +280,12 @@ public class ApplicationTests {
         List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
         List<IRepository<Category>> categoryRepositories = List.of(categoryFileRepository, dbCategoryRepository);
 
-
         for (IRepository<Category> categoryRepository : categoryRepositories) {
             categoryRepository.create(categoryTops);
             Category retrievedCategory = categoryRepository.read(categoryTops.getId());
             assertNotNull(retrievedCategory);
             assertEquals(CategoryName.TOPS, retrievedCategory.getName());
         }
-
 
         for (IRepository<User> userRepository : userRepositories) {
             userRepository.create(user1);
@@ -300,6 +298,12 @@ public class ApplicationTests {
             assertEquals("MarryStone", retrievedUser2.getUserName());
         }
 
+        for (IRepository<Product> productRepository : productRepositories) {
+            productRepository.create(product1);
+            Product retrievedProduct1 = productRepository.read(product1.getId());
+            assertNotNull(retrievedProduct1);
+            assertEquals(product1.getName(), retrievedProduct1.getName());
+        }
 
         for (IRepository<Review> reviewRepository : reviewRepositories) {
 
@@ -356,11 +360,11 @@ public class ApplicationTests {
 
         User user1 = new User("JeremyReef", "Password2", "jeremyreef@gamil.com", "0784556211", 0.0);
         User user2 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
-        Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, user1.getId());
+        Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, 1);
 
 
         Category categoryTops = new Category(CategoryName.TOPS);
-        product1.setCategory(categoryTops.getId());
+        product1.setCategory(1);
 
 
 
@@ -458,11 +462,11 @@ public class ApplicationTests {
         User user1 = new User("JeremyReef", "Password2", "jeremyreef@gamil.com", "0784556211", 0.0);
         User user2 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
 
-        Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, user1.getId());
+        Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, 1);
 
 
         Category categoryTops = new Category(CategoryName.TOPS);
-        product1.setCategory(categoryTops.getId());
+        product1.setCategory(1);
 
 
 
