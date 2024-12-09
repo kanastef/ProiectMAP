@@ -64,11 +64,11 @@ public class ApplicationTests {
 
     @Test
     public void testCrudUser() {
-        User user1 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
+//        User user1 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
         List<IRepository<User>> repositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
 
         for(IRepository<User> repository : repositories) {
-
+            User user1 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
             //Test Create
             repository.create(user1);
             User retrievedUser = repository.read(user1.getId());
@@ -103,10 +103,10 @@ public class ApplicationTests {
     @Test
     public void testCrudAdmin(){
 
-        Admin admin1 =new Admin("AdamBeckner","Password1","adambeckner@email.com","0789447512");
         List<IRepository<Admin>> repositories=List.of(adminIMRepository,adminFileRepository,dbAdminRepository);
 
         for(IRepository<Admin> repository:repositories){
+            Admin admin1 =new Admin("AdamBeckner","Password1","adambeckner@email.com","0789447512");
 
             //Test Create
             repository.create(admin1);

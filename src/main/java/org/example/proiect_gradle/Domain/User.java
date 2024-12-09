@@ -43,13 +43,20 @@ public class User extends Account implements Identifiable {
         return listedProducts;
     }
 
+    public void setListedProducts(List<Integer> listedProducts) {
+        this.listedProducts = listedProducts;
+    }
+
     public void incrementFlaggedActions() {
         this.nrOfFlaggedActions++;
     }
 
-    // Getter for flagged actions
     public int getFlaggedActions() {
         return nrOfFlaggedActions;
+    }
+
+    public void setNrOfFlaggedActions(int nrOfFlaggedActions) {
+        this.nrOfFlaggedActions = nrOfFlaggedActions;
     }
 
     public void setFavourites(List<Integer> favourites) {

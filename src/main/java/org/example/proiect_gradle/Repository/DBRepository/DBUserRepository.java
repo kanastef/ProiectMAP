@@ -153,6 +153,7 @@ public class DBUserRepository extends DBRepository<User> {
                     resultSet.getString("email"), resultSet.getString("phone"),
                     resultSet.getDouble("score"));
             user.setId(resultSet.getInt("id"));
+            user.setNrOfFlaggedActions(resultSet.getInt("nrOfFlaggedActions"));
             user.setFavourites(getLikedProductsForUser(user.getId(), connection));
             return user;
         }catch(SQLException e){
