@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.example.proiect_gradle.Exceptions.EntityNotFoundException;
 import org.example.proiect_gradle.Exceptions.BusinessLogicException;
@@ -640,13 +641,9 @@ public class UserService extends VisitorService {
         try {
             if (authenticate(userName, password)) {
                 User seller = findByCriteriaHelper(userName, password);
-
                 Product product = new Product(name, color, size, price, brand, condition, nrOfViews, nrOfLikes, seller.getId());
                 product.setCategory(category);
                 productRepo.create(product);
-
-                seller.getListedProducts().add(product.getId());
-                userRepo.update(seller);
                 return true;
             }
         }catch (BusinessLogicException e) {
@@ -672,10 +669,11 @@ public class UserService extends VisitorService {
                 if (user == null) {
                     throw new EntityNotFoundException("User not found.");
                 }
-
-                for (int i = 0; i < user.getListedProducts().size(); i++) {
-                    if (user.getListedProducts().get(i) == productId) {
-                        user.getListedProducts().remove(i);
+                List<Product> userProducts = productRepo.getAll().stream()
+                        .filter(product -> product.getListedBy() == user.getId())
+                        .toList();;
+                for (Product userProduct : userProducts) {
+                    if (userProduct.getId() == productId) {
                         productRepo.delete(productId);
                         return true;
                     }
@@ -756,20 +754,19 @@ public class UserService extends VisitorService {
      * @return A list of products the user has listed, or an empty list if the user is not found or has no listed products.
      */
     public List<Product> getMyListedProducts(String username, String password) {
-        List<Product> listedProducts = new ArrayList<>();
+        List<Product> userProducts = new ArrayList<>();
 
         try {
             User user = findByCriteriaHelper(username, password);
             if (user != null) {
-                for (int i = 0; i < user.getListedProducts().size(); i++) {
-                    Product product = productRepo.read(user.getListedProducts().get(i));
-                    listedProducts.add(product);
-                }
+                userProducts = productRepo.getAll().stream()
+                        .filter(product -> product.getListedBy() == user.getId())
+                        .toList();
             }
         }catch (BusinessLogicException e) {
             System.err.println("Error retrieving listed products: " + e.getMessage());
         }
-        return listedProducts;
+        return userProducts;
     }
 
     /**

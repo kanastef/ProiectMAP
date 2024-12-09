@@ -7,7 +7,6 @@ public class User extends Account implements Identifiable {
     private int id;
     private double score;
     protected List<Integer> favourites;
-    protected List<Integer> listedProducts;
     public int nrOfFlaggedActions;
 
     public User(String userName, String password, String email, String phone, double score){
@@ -17,7 +16,6 @@ public class User extends Account implements Identifiable {
         this.phone=phone;
         this.score=score;
         this.favourites=new ArrayList<>();
-        this.listedProducts=new ArrayList<>();
         this.nrOfFlaggedActions=0;
     }
 
@@ -37,14 +35,6 @@ public class User extends Account implements Identifiable {
 
     public List<Integer> getFavourites() {
         return favourites;
-    }
-
-    public List<Integer> getListedProducts(){
-        return listedProducts;
-    }
-
-    public void setListedProducts(List<Integer> listedProducts) {
-        this.listedProducts = listedProducts;
     }
 
     public void incrementFlaggedActions() {

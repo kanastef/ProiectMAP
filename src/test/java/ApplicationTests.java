@@ -36,10 +36,9 @@ public class ApplicationTests {
     String adminsFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/admins.txt";
     String visitorsFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/visitors.txt";
     String likedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/likedProducts.txt";
-    String listedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/listedProducts.txt";
     String orderedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/orderedProducts.txt";
     VisitorFileRepository visitorFileRepository = new VisitorFileRepository(visitorsFilename);
-    UserFileRepository userFileRepository = new UserFileRepository(userFilename, listedProducts, likedProducts);
+    UserFileRepository userFileRepository = new UserFileRepository(userFilename, likedProducts);
     ProductFileRepository productFileRepository = new ProductFileRepository(productFilename);
     CategoryFileRepository categoryFileRepository = new CategoryFileRepository(categoriesFilename);
     OfferFileRepository offerFileRepository = new OfferFileRepository(offersFilename);

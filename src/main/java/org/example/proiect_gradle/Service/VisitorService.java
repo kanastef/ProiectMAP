@@ -414,15 +414,13 @@ public class VisitorService {
 
     public List<Product> displayUserListings(int userId) {
         User user=userRepo.read(userId);
-        List<Product> products = new ArrayList<>();
+        List<Product> userProducts = new ArrayList<>();
         if (user != null) {
-            List<Integer> listedProducts = user.getListedProducts();
-            for (int i = 0; i < listedProducts.size(); i++) {
-                Product product=productRepo.read(listedProducts.get(i));
-                products.add(product);
-            }
+            userProducts = productRepo.getAll().stream()
+                    .filter(product -> product.getListedBy() == user.getId())
+                    .toList();
         }
-        return products;
+        return userProducts;
 
     }
 

@@ -14,10 +14,8 @@ import java.util.function.Predicate;
 public class UserFileRepository extends FileRepository<User> {
     public String productsListedByUserFilename;
     public String productsLikedByUserFilename;
-    public UserFileRepository(String filename, String productsListedByUserFilename,
-                              String productsLikedByUserFilename) {
+    public UserFileRepository(String filename, String productsLikedByUserFilename) {
         super(filename);
-        this.productsListedByUserFilename = productsListedByUserFilename;
         this.productsLikedByUserFilename = productsLikedByUserFilename;
     }
 
@@ -72,11 +70,6 @@ public class UserFileRepository extends FileRepository<User> {
                 u.getFavourites().clear();
                 u.getFavourites().addAll(value);
             });
-            loadListedProducts().forEach((key, value) -> {
-                User u = super.read(key);
-                u.getListedProducts().clear();
-                u.getListedProducts().addAll(value);
-            });
         }catch(RuntimeException e){
             System.err.println("Error loading data from file: " + e.getMessage());
         }
@@ -102,30 +95,6 @@ public class UserFileRepository extends FileRepository<User> {
             return likedProducts;
         } catch (IOException e) {
             System.err.println("Error reading liked products: " + e.getMessage());
-        }
-        return new HashMap<>();
-    }
-
-    private Map<Integer, List<Integer>>  loadListedProducts() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(productsListedByUserFilename))) {
-            String line;
-            Map<Integer, List<Integer>> listedProducts = new HashMap<>();
-            super.getAll().forEach(user -> {
-                listedProducts.put(user.getId(), new ArrayList<>());
-            });
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                int userId = Integer.parseInt(parts[0]);
-                int productId = Integer.parseInt(parts[1]);
-
-                User user = super.read(userId);
-                if (user != null) {
-                    listedProducts.get(userId).add(productId);
-                }
-            }
-            return listedProducts;
-        } catch (IOException e) {
-            System.err.println("Error reading listed products: " + e.getMessage());
         }
         return new HashMap<>();
     }
@@ -160,28 +129,18 @@ public class UserFileRepository extends FileRepository<User> {
     public void create(User user) {
         super.create(user);
         saveLikedProducts(user);
-        saveListedProducts(user);
     }
 
     @Override
     public void update(User user) {
         super.update(user);
         saveLikedProducts(user);
-        saveListedProducts(user);
     }
 
     private void saveLikedProducts(User user) {
-
         Map<Integer, List<Integer>> likedProducts = loadLikedProducts();
         likedProducts.put(user.getId(), user.getFavourites());
         writeLikedProducts(likedProducts);
-    }
-
-    private void saveListedProducts(User user) {
-
-        Map<Integer, List<Integer>> listedProducts = loadListedProducts();
-        listedProducts.put(user.getId(), user.getListedProducts());
-        writeListedProducts(listedProducts);
     }
 
 
@@ -202,13 +161,10 @@ public class UserFileRepository extends FileRepository<User> {
         }
 
         Map<Integer, List<Integer>> liked = loadLikedProducts();
-        Map<Integer, List<Integer>> listed = loadListedProducts();
 
         matchingUsers.forEach(u->{
             u.getFavourites().clear();
             u.getFavourites().addAll(liked.get(u.getId()));
-            u.getListedProducts().clear();
-            u.getListedProducts().addAll(listed.get(u.getId()));
         });
 
         return matchingUsers;
@@ -218,13 +174,10 @@ public class UserFileRepository extends FileRepository<User> {
     public List<User> getAll(){
         List<User> users = super.getAll();
         Map<Integer, List<Integer>> likedProducts = loadLikedProducts();
-        Map<Integer, List<Integer>> listedProducts = loadListedProducts();
 
         users.forEach(user -> {
             user.getFavourites().clear();
             user.getFavourites().addAll(likedProducts.get(user.getId()));
-            user.getListedProducts().clear();
-            user.getListedProducts().addAll(listedProducts.get(user.getId()));
         });
         return users;
     }
