@@ -10,7 +10,7 @@ public class User extends Account implements Identifiable {
     protected List<Integer> listedProducts;
     public int nrOfFlaggedActions;
 
-    public User(String userName, String password, String email, String phone, double score){
+    public User(String userName, String password, String email, String phone){
         this.userName=userName;
         this.password=password;
         this.email=email;
