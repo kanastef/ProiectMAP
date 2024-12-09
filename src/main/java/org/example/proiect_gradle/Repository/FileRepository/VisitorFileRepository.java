@@ -16,7 +16,7 @@ public class VisitorFileRepository extends FileRepository<Visitor> {
             throw new IllegalArgumentException("Visitor object cannot be null");
         }
 
-        return Integer.toString(visitor.getId());
+        return visitor.getId() + "," + visitor.getVisitDate();
     }
 
     public Visitor createObjectFromString(String line){
@@ -28,8 +28,9 @@ public class VisitorFileRepository extends FileRepository<Visitor> {
         try {
             String[] parts = line.split(",");
             int id = Integer.parseInt(parts[0]);
+            LocalDateTime visitDate = LocalDateTime.parse(parts[1]);
 
-            Visitor visitor = new Visitor(LocalDateTime.now());
+            Visitor visitor = new Visitor(visitDate);
             visitor.setId(id);
             return visitor;
         }catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
