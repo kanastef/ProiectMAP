@@ -111,6 +111,8 @@ public class Main {
         controller.userService.sendOffer(u4.getUserName(),u4.getPassword(),"Would you consider..",3,28.00);
         controller.userService.sendOffer(u4.getUserName(),u4.getPassword(),"Would you consider..",4,7.00);
 
+        controller.userService.acceptOffer("LisaTeak", "xyz987", 1);
+
 //        //orders
 //
         controller.userService.placeOrder(u3.getUserName(),u3.getPassword(), List.of(1), "sent", "StradaX");
