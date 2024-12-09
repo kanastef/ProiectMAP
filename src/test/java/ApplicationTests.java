@@ -168,29 +168,69 @@ public class ApplicationTests {
 
     @Test
     public void testCrudProduct() {
-        Product product1 = new Product("Vintage Top","blue",38,8.96,"Nike","Good",0,0,1);
-        List<IRepository<Product>> repositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
 
-        for (IRepository<Product> repository : repositories) {
+        User user1 = new User("JeremyReef", "Password2", "jeremyreef@gamil.com", "0784556211", 0.0);
+        Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, user1.getId());
+
+
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryFileRepository, dbCategoryRepository);
+
+
+        Category categoryTops = new Category(CategoryName.TOPS);
+        product1.setCategory(categoryTops.getId());
+
+
+        for (IRepository<Category> categoryRepository : categoryRepositories) {
+            categoryRepository.create(categoryTops);
+            Category retrievedCategory = categoryRepository.read(categoryTops.getId());
+            assertNotNull(retrievedCategory);
+            assertEquals(CategoryName.TOPS, retrievedCategory.getName());
+        }
+
+
+        for (IRepository<User> userRepository : userRepositories) {
+            userRepository.create(user1);
+            User retrievedUser = userRepository.read(user1.getId());
+            assertNotNull(retrievedUser);
+            assertEquals("JeremyReef", retrievedUser.getUserName());
+        }
+
+
+        for (IRepository<Product> productRepository : productRepositories) {
 
             // Test Create
-            repository.create(product1);
-            Product retrievedProduct = repository.read(product1.getId());
+            productRepository.create(product1);
+            Product retrievedProduct = productRepository.read(product1.getId());
             assertNotNull(retrievedProduct);
-            assertEquals(1, retrievedProduct.getListedBy());
+            assertEquals(user1.getId(), retrievedProduct.getListedBy());
 
             // Test Update
             product1.setPrice(9.30);
-            repository.update(product1);
-            Product updatedProduct = repository.read(product1.getId());
+            productRepository.update(product1);
+            Product updatedProduct = productRepository.read(product1.getId());
             assertNotNull(updatedProduct);
             assertEquals(9.30, updatedProduct.getPrice());
 
-
             // Test Delete
-            repository.delete(product1.getId());
-            Product deletedProduct = repository.read(product1.getId());
+            productRepository.delete(product1.getId());
+            Product deletedProduct = productRepository.read(product1.getId());
             assertNull(deletedProduct);
+        }
+
+
+        for (IRepository<User> userRepository : userRepositories) {
+            userRepository.delete(user1.getId());
+            User deletedUser = userRepository.read(user1.getId());
+            assertNull(deletedUser);
+        }
+
+
+        for (IRepository<Category> categoryRepository : categoryRepositories) {
+            categoryRepository.delete(categoryTops.getId());
+            Category deletedCategory = categoryRepository.read(categoryTops.getId());
+            assertNull(deletedCategory);
         }
     }
 
@@ -225,91 +265,287 @@ public class ApplicationTests {
 
     @Test
     public void testCrudReview() {
-        Review review1 = new Review(4.5,"Excellent Service",2,1);
-        List<IRepository<Review>> repositories = List.of(reviewIMRepository, reviewFileRepository, dbReviewRepository);
+        // Create User and Product
+        User user1 = new User("JeremyReef", "Password2", "jeremyreef@gamil.com", "0784556211", 0.0);
+        User user2 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
+        Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, user1.getId());
+        Category categoryTops = new Category(CategoryName.TOPS);
+        product1.setCategory(categoryTops.getId());
+        Review review1 = new Review(4.5, "Excellent Service", user2.getId(), user1.getId());
 
-        for (IRepository<Review> repository : repositories) {
 
+        List<IRepository<Review>> reviewRepositories = List.of(reviewIMRepository, reviewFileRepository, dbReviewRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryFileRepository, dbCategoryRepository);
+
+
+        for (IRepository<Category> categoryRepository : categoryRepositories) {
+            categoryRepository.create(categoryTops);
+            Category retrievedCategory = categoryRepository.read(categoryTops.getId());
+            assertNotNull(retrievedCategory);
+            assertEquals(CategoryName.TOPS, retrievedCategory.getName());
+        }
+
+
+        for (IRepository<User> userRepository : userRepositories) {
+            userRepository.create(user1);
+            userRepository.create(user2);
+            User retrievedUser1 = userRepository.read(user1.getId());
+            User retrievedUser2 = userRepository.read(user2.getId());
+            assertNotNull(retrievedUser1);
+            assertEquals("JeremyReef", retrievedUser1.getUserName());
+            assertNotNull(retrievedUser2);
+            assertEquals("MarryStone", retrievedUser2.getUserName());
+        }
+
+
+        for (IRepository<Review> reviewRepository : reviewRepositories) {
             // Test Create
-            repository.create(review1);
-            Review retrievedReview = repository.read(review1.getId());
+            reviewRepository.create(review1);
+            Review retrievedReview = reviewRepository.read(review1.getId());
             assertNotNull(retrievedReview);
             assertEquals(4.5, retrievedReview.getGrade());
 
             // Test Update
             review1.setMessage("Great seller!");
-            repository.update(review1);
-            Review updatedReview = repository.read(review1.getId());
+            reviewRepository.update(review1);
+            Review updatedReview = reviewRepository.read(review1.getId());
             assertNotNull(updatedReview);
             assertEquals("Great seller!", updatedReview.getMessage());
 
-
             // Test Delete
-            repository.delete(review1.getId());
-            Review deletedReview = repository.read(review1.getId());
+            reviewRepository.delete(review1.getId());
+            Review deletedReview = reviewRepository.read(review1.getId());
             assertNull(deletedReview);
         }
+
+
+        for (IRepository<Product> productRepository : productRepositories) {
+            productRepository.delete(product1.getId());
+            Product deletedProduct = productRepository.read(product1.getId());
+            assertNull(deletedProduct);
+        }
+
+
+        List<Integer> userIdsToDelete = List.of(user1.getId(), user2.getId());
+        for (IRepository<User> userRepository : userRepositories) {
+            for (Integer userId : userIdsToDelete) {
+                userRepository.delete(userId);
+            }
+            for (Integer userId : userIdsToDelete) {
+                User deletedUser = userRepository.read(userId);
+                assertNull(deletedUser);
+            }
+        }
+
+
+        for (IRepository<Category> categoryRepository : categoryRepositories) {
+            categoryRepository.delete(categoryTops.getId());
+            Category deletedCategory = categoryRepository.read(categoryTops.getId());
+            assertNull(deletedCategory);
+        }
     }
+
 
     @Test
     public void testCrudOffer() {
-        Offer offer1 = new Offer("Would you do 13.50 for this?",15.50,1,1,2);
-        List<IRepository<Offer>> repositories = List.of(offerIMRepository, offerFileRepository, dbOfferRepository);
 
-        for (IRepository<Offer> repository : repositories) {
+        User user1 = new User("JeremyReef", "Password2", "jeremyreef@gamil.com", "0784556211", 0.0);
+        User user2 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
+        Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, user1.getId());
 
+
+        Category categoryTops = new Category(CategoryName.TOPS);
+        product1.setCategory(categoryTops.getId());
+
+
+        Offer offer1 = new Offer("Would you do 13.50 for this?", 15.50, product1.getId(), user2.getId(), user1.getId());
+
+
+        List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository, dbOfferRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryFileRepository, dbCategoryRepository);
+
+
+        for (IRepository<User> userRepository : userRepositories) {
+            userRepository.create(user1);
+            userRepository.create(user2);
+            User retrievedUser1 = userRepository.read(user1.getId());
+            User retrievedUser2 = userRepository.read(user2.getId());
+            assertNotNull(retrievedUser1);
+            assertEquals("JeremyReef", retrievedUser1.getUserName());
+            assertNotNull(retrievedUser2);
+            assertEquals("MarryStone", retrievedUser2.getUserName());
+        }
+
+        for (IRepository<Category> categoryRepository : categoryRepositories) {
+            categoryRepository.create(categoryTops);
+            Category retrievedCategory = categoryRepository.read(categoryTops.getId());
+            assertNotNull(retrievedCategory);
+            assertEquals(CategoryName.TOPS, retrievedCategory.getName());
+        }
+
+
+        for (IRepository<Product> productRepository : productRepositories) {
+            productRepository.create(product1);
+            Product retrievedProduct = productRepository.read(product1.getId());
+            assertNotNull(retrievedProduct);
+            assertEquals(user1.getId(), retrievedProduct.getListedBy());
+            assertEquals(categoryTops.getId(), retrievedProduct.getCategory());
+        }
+
+
+        for (IRepository<Offer> offerRepository : offerRepositories) {
             // Test Create
-            repository.create(offer1);
-            Offer retrievedOffer = repository.read(offer1.getId());
+            offerRepository.create(offer1);
+            Offer retrievedOffer = offerRepository.read(offer1.getId());
             assertNotNull(retrievedOffer);
-            assertEquals(1, retrievedOffer.getTargetedProduct());
+            assertEquals(15.50, retrievedOffer.getOfferedPrice());
+            assertEquals(product1.getId(), retrievedOffer.getTargetedProduct());
 
             // Test Update
             offer1.setOfferedPrice(13.20);
-            repository.update(offer1);
-            Offer updatedOffer = repository.read(offer1.getId());
+            offerRepository.update(offer1);
+            Offer updatedOffer = offerRepository.read(offer1.getId());
             assertNotNull(updatedOffer);
             assertEquals(13.20, updatedOffer.getOfferedPrice());
 
-
-
             // Test Delete
-            repository.delete(offer1.getId());
-            Offer deletedOffer = repository.read(offer1.getId());
+            offerRepository.delete(offer1.getId());
+            Offer deletedOffer = offerRepository.read(offer1.getId());
             assertNull(deletedOffer);
+        }
+
+
+        for (IRepository<Product> productRepository : productRepositories) {
+            productRepository.delete(product1.getId());
+            Product deletedProduct = productRepository.read(product1.getId());
+            assertNull(deletedProduct);
+        }
+
+
+        for (IRepository<Category> categoryRepository : categoryRepositories) {
+            categoryRepository.delete(categoryTops.getId());
+            Category deletedCategory = categoryRepository.read(categoryTops.getId());
+            assertNull(deletedCategory);
+        }
+
+
+        List<Integer> userIdsToDelete = List.of(user1.getId(), user2.getId());
+        for (IRepository<User> userRepository : userRepositories) {
+            for (Integer userId : userIdsToDelete) {
+                userRepository.delete(userId);
+            }
+            for (Integer userId : userIdsToDelete) {
+                User deletedUser = userRepository.read(userId);
+                assertNull(deletedUser);
+            }
         }
     }
 
 
+
+
     @Test
-    public void testCrudOrder(){
-        Order order1=new Order(List.of(1),"pending","Strada Test",1,2);
-        List<IRepository<Order>> repositories = List.of(orderIMRepository, orderFileRepository, dbOrderRepository);
+    public void testCrudOrder() {
 
-        for (IRepository<Order> repository : repositories) {
+        User user1 = new User("JeremyReef", "Password2", "jeremyreef@gamil.com", "0784556211", 0.0);
+        User user2 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
 
+        Product product1 = new Product("Vintage Top", "blue", 38, 8.96, "Nike", "Good", 0, 0, user1.getId());
+
+
+        Category categoryTops = new Category(CategoryName.TOPS);
+        product1.setCategory(categoryTops.getId());
+
+
+        Order order1 = new Order(List.of(product1.getId()), "pending", "Strada Test", user2.getId(), user1.getId());
+
+
+        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository, dbOrderRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryFileRepository, dbCategoryRepository);
+
+
+        for (IRepository<User> userRepository : userRepositories) {
+            userRepository.create(user1);
+            userRepository.create(user2);
+            User retrievedUser1 = userRepository.read(user1.getId());
+            User retrievedUser2 = userRepository.read(user2.getId());
+            assertNotNull(retrievedUser1);
+            assertEquals("JeremyReef", retrievedUser1.getUserName());
+            assertNotNull(retrievedUser2);
+            assertEquals("MarryStone", retrievedUser2.getUserName());
+        }
+
+
+        for (IRepository<Category> categoryRepository : categoryRepositories) {
+            categoryRepository.create(categoryTops);
+            Category retrievedCategory = categoryRepository.read(categoryTops.getId());
+            assertNotNull(retrievedCategory);
+            assertEquals(CategoryName.TOPS, retrievedCategory.getName());
+        }
+
+
+        for (IRepository<Product> productRepository : productRepositories) {
+            productRepository.create(product1);
+            Product retrievedProduct = productRepository.read(product1.getId());
+            assertNotNull(retrievedProduct);
+            assertEquals(user1.getId(), retrievedProduct.getListedBy());
+            assertEquals(categoryTops.getId(), retrievedProduct.getCategory());
+        }
+
+
+        for (IRepository<Order> orderRepository : orderRepositories) {
             // Test Create
-            repository.create(order1);
-            Order retrievedOrder = repository.read(order1.getId());
+            orderRepository.create(order1);
+            Order retrievedOrder = orderRepository.read(order1.getId());
             assertNotNull(retrievedOrder);
             assertEquals("Strada Test", retrievedOrder.getShippingAddress());
 
             // Test Update
             order1.setStatus("shipped");
-            repository.update(order1);
-            Order updatedOrder = repository.read(order1.getId());
+            orderRepository.update(order1);
+            Order updatedOrder = orderRepository.read(order1.getId());
             assertNotNull(updatedOrder);
             assertEquals("shipped", updatedOrder.getStatus());
 
-
             // Test Delete
-            repository.delete(order1.getId());
-            Order deletedOrder = repository.read(order1.getId());
+            orderRepository.delete(order1.getId());
+            Order deletedOrder = orderRepository.read(order1.getId());
             assertNull(deletedOrder);
         }
 
 
+        for (IRepository<Product> productRepository : productRepositories) {
+            productRepository.delete(product1.getId());
+            Product deletedProduct = productRepository.read(product1.getId());
+            assertNull(deletedProduct);
+        }
+
+
+        for (IRepository<Category> categoryRepository : categoryRepositories) {
+            categoryRepository.delete(categoryTops.getId());
+            Category deletedCategory = categoryRepository.read(categoryTops.getId());
+            assertNull(deletedCategory);
+        }
+
+
+        List<Integer> userIdsToDelete = List.of(user1.getId(), user2.getId());
+        for (IRepository<User> userRepository : userRepositories) {
+            for (Integer userId : userIdsToDelete) {
+                userRepository.delete(userId);
+            }
+            for (Integer userId : userIdsToDelete) {
+                User deletedUser = userRepository.read(userId);
+                assertNull(deletedUser);
+            }
+        }
     }
+
 
 
 
