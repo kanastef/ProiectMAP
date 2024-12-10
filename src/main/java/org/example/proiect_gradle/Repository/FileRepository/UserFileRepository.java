@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public class UserFileRepository extends FileRepository<User> {
-    public String productsListedByUserFilename;
     public String productsLikedByUserFilename;
     public UserFileRepository(String filename, String productsLikedByUserFilename) {
         super(filename);
@@ -108,20 +107,7 @@ public class UserFileRepository extends FileRepository<User> {
                 }
             }
         } catch (IOException e) {
-            System.err.println("Error saving listed products: " + e.getMessage());
-        }
-    }
-
-    private void writeListedProducts(Map<Integer, List<Integer>> listedProducts) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(productsListedByUserFilename))) {
-            for(Map.Entry<Integer, List<Integer>> entry : listedProducts.entrySet()) {
-                for(Integer productId : entry.getValue()) {
-                    writer.write(entry.getKey() + "," + productId);
-                    writer.newLine();
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Error saving listed products: " + e.getMessage());
+            System.err.println("Error saving liked products: " + e.getMessage());
         }
     }
 
