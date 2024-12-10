@@ -78,4 +78,5 @@ public class DBVisitorRepository extends DBRepository<Visitor> {
             throw new DatabaseException("Error creating user entity from result set");
         }
     }
+
 }

@@ -188,4 +188,5 @@ public class DBUserRepository extends DBRepository<User> {
             throw new RuntimeException(e);
         }
     }
+
 }

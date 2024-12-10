@@ -85,4 +85,5 @@ public class DBOfferRepository extends DBRepository<Offer>{
             throw new DatabaseException("Error creating offer entity from result set");
         }
     }
+
 }

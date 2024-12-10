@@ -98,4 +98,5 @@ public class DBProductRepository extends DBRepository<Product>{
             throw new DatabaseException("Error creating product entity from result set");
         }
     }
+
 }

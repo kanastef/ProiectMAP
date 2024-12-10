@@ -190,17 +190,4 @@ public class DBOrderRepository extends DBRepository<Order>{
         }
     }
 
-//    @Override
-//    public void update(Order entity) {
-//        try {
-//            Order object = read(entity.getId());
-//            if (object != null) {
-//                PreparedStatement statement = getUpdateStatement(connection, entity);
-//                statement.executeUpdate();
-//
-//            }
-//        } catch (Exception e){
-//            throw new IllegalArgumentException("ERROR UPDATING ORDER");
-//        }
-//    }
 }

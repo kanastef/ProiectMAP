@@ -82,4 +82,5 @@ public class DBReviewRepository extends DBRepository<Review> {
             throw new DatabaseException("Error creating review entity from result set");
         }
     }
+
 }
