@@ -759,8 +759,8 @@ public class ApplicationTests {
         }
     }
 
-
-    public void testAcceptOffer() {
+    @Test
+    public void testDeclineOffer() {
         List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
         List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
         List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository, dbOfferRepository);
