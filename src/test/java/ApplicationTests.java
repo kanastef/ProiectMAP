@@ -57,20 +57,16 @@ public class ApplicationTests {
     DBReviewRepository dbReviewRepository = new DBReviewRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
     DBVisitorRepository dbVisitorRepository = new DBVisitorRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
 
-    VisitorService visitorIMService= new VisitorService(userIMRepository,productIMRepository,reviewIMRepository,categoryIMRepository);
     UserService userIMService=new UserService(userIMRepository,productIMRepository,reviewIMRepository,categoryIMRepository,orderIMRepository,offerIMRepository);
     AdminService adminIMService=new AdminService(userIMRepository,productIMRepository,reviewIMRepository,adminIMRepository,categoryIMRepository,orderIMRepository);
 
-    VisitorService visitorFileService=new VisitorService(userFileRepository,productFileRepository,reviewFileRepository,categoryFileRepository);
     UserService userFileService=new UserService(userFileRepository,productFileRepository,reviewFileRepository,categoryFileRepository,orderFileRepository,offerFileRepository);
     AdminService adminFileService=new AdminService(userFileRepository,productFileRepository,reviewFileRepository,adminFileRepository,categoryFileRepository,orderFileRepository);
 
 
-    VisitorService visitorDBService = new VisitorService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository);
     UserService userDBService = new UserService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository, dbOrderRepository, dbOfferRepository);
     AdminService adminDBService = new AdminService(dbUserRepository, dbProductRepository, dbReviewRepository, dbAdminRepository, dbCategoryRepository, dbOrderRepository);
-//    Controller controller = new Controller(adminService, userService, visitorService);
-//    ConsoleApp console = new ConsoleApp(controller);
+
 
 
     @Test
@@ -571,10 +567,10 @@ public class ApplicationTests {
 
 
 
-    User Service
+    //User Service
 
 
-    Offer Tests
+    //Offer Tests
 
     @Test
     public void testSendOffer() {
@@ -636,7 +632,6 @@ public class ApplicationTests {
                     assertEquals(user2.getId(), retrievedOffer.getSender());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
                 fail("Exception should not have been thrown in the success case.");
             }
 
@@ -646,7 +641,7 @@ public class ApplicationTests {
                         user2.getUserName(),
                         user2.getPassword(),
                         "Invalid product offer",
-                        -1,
+                        1,
                         10.00
                 );
                 assertFalse(offerSent);
@@ -658,19 +653,17 @@ public class ApplicationTests {
         }
 
 
-        List<Integer> userIdsToDelete = List.of(user1.getId(), user2.getId());
+
         List<Integer> productIdsToDelete = List.of(1);
         List<Integer> categoryIdsToDelete = List.of(categoryOuterwear.getId());
 
         for (IRepository<User> userRepo : userRepositories) {
-            for (Integer userId : userIdsToDelete) {
-                userRepo.delete(userId);
-            }
+            userRepo.delete(1);
+            userRepo.delete(2);
+
         }
         for (IRepository<Product> productRepo : productRepositories) {
-            for (Integer productId : productIdsToDelete) {
-                productRepo.delete(productId);
-            }
+            productRepo.delete(1);
         }
         for (IRepository<Category> categoryRepo : categoryRepositories) {
             for (Integer categoryId : categoryIdsToDelete) {
@@ -924,7 +917,7 @@ public class ApplicationTests {
 
 
 
-     Order tests
+     //Order tests
 
     @Test
     public void testPlaceOrder() {
@@ -1645,6 +1638,264 @@ public class ApplicationTests {
 
         }
     }
+
+
+
+
+    @Test
+    public void testDeleteUser() {
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<Admin>> adminRepositories = List.of(adminIMRepository, adminFileRepository, dbAdminRepository);
+
+
+        Admin admin = new Admin("AdminUser", "AdminPassword1", "admin@gmail.com", "0747996887");
+        User user = new User("TestUser", "TestPassword1", "testuser@gmail.com", "0758663221", 0.0);
+
+
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.create(user);
+        }
+
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.create(admin);
+        }
+
+
+        List<AdminService> adminServices = List.of(
+                adminIMService,
+                adminFileService,
+                adminDBService
+        );
+
+        List<UserService> userServices = List.of(
+                userIMService,
+                userFileService,
+                userDBService
+        );
+
+        for (AdminService adminService : adminServices) {
+            boolean deletedUser = adminService.deleteUser(admin.getUserName(), admin.getPassword(), user.getId());
+            assertTrue(deletedUser);
+
+        }
+
+        try {
+            for (AdminService adminService: adminServices) {
+                boolean deletedUser= adminService.deleteUser(admin.getUserName(), admin.getPassword(), -1);
+                assertFalse(deletedUser);
+            }
+        } catch (EntityNotFoundException e) {
+            assertEquals("User with ID -1 does not exist.", e.getMessage());
+        }
+
+        for (IRepository<User> userRepo : userRepositories) {
+            User deletedUser  = userRepo.read(user.getId());
+            assertNull(deletedUser);
+        }
+
+
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.delete(admin.getId());
+        }
+
+
+    }
+
+
+    @Test
+    public void testDeleteReviewAdmin() {
+
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<Review>> reviewRepositories = List.of(reviewIMRepository, reviewFileRepository, dbReviewRepository);
+        List<IRepository<Admin>> adminRepositories = List.of(adminIMRepository, adminFileRepository, dbAdminRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
+        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository, dbOrderRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        Admin admin = new Admin("AdminUser", "AdminPassword1", "admin@gmail.com", "0747996887");
+        User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
+        User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
+        Category categoryOuterwear = new Category(CategoryName.OUTERWEAR);
+
+
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.create(buyer);
+            userRepo.create(seller);
+        }
+
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.create(admin);
+        }
+
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.create(categoryOuterwear);
+        }
+
+
+        List<AdminService> adminServices = List.of(
+                adminIMService,
+                adminFileService,
+                adminDBService
+        );
+
+        List<UserService> userServices = List.of(
+                userIMService,
+                userFileService,
+                userDBService
+        );
+
+        for (UserService userService : userServices) {
+            boolean productListed = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Jacket", "Red", 40, 50.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed);
+        }
+
+
+        for (UserService userService : userServices) {
+            boolean orderPlaced = userService.placeOrder(
+                    buyer.getUserName(),
+                    buyer.getPassword(),
+                    List.of(1),
+                    "Pending",
+                    "1234 Shipping St."
+            );
+            assertTrue(orderPlaced);
+
+        }
+
+        for (UserService userService : userServices) {
+            boolean reviewWritten = userService.writeReview(buyer.getUserName(), buyer.getPassword(), 4, "Very good service", 2);
+            assertTrue(reviewWritten);
+        }
+
+        for (AdminService adminService : adminServices) {
+            boolean reviewDeleted = adminService.deleteReview(admin.getUserName(), admin.getPassword(), 1);
+            assertTrue(reviewDeleted);
+        }
+
+
+        try {
+            for (AdminService adminService: adminServices) {
+                boolean deletedReview= adminService.deleteReview(admin.getUserName(), admin.getPassword(), -1);
+                assertFalse(deletedReview);
+            }
+        } catch (EntityNotFoundException e) {
+            assertEquals("Review with ID -1 does not exist.", e.getMessage());
+        }
+
+        for (IRepository<Review> reviewRepo : reviewRepositories) {
+            Review deletedReview = reviewRepo.read(1);
+            assertNull(deletedReview);
+        }
+
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.delete(admin.getId());
+        }
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.delete(buyer.getId());
+            userRepo.delete(seller.getId());
+        }
+        for (IRepository<Product> productRepo : productRepositories) {
+            productRepo.delete(1);
+        }
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.delete(categoryOuterwear.getId());
+        }
+        for (IRepository<Order> orderRepo : orderRepositories) {
+            orderRepo.delete(1);
+        }
+
+
+    }
+
+    @Test
+    public void testDeleteProduct(){
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<Admin>> adminRepositories = List.of(adminIMRepository, adminFileRepository, dbAdminRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+
+
+        Admin admin = new Admin("AdminUser", "AdminPassword1", "admin@gmail.com", "0747996887");
+        User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
+        Category categoryOuterwear = new Category(CategoryName.OUTERWEAR);
+
+
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.create(seller);
+        }
+
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.create(admin);
+        }
+
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.create(categoryOuterwear);
+        }
+
+
+        List<AdminService> adminServices = List.of(
+                adminIMService,
+                adminFileService,
+                adminDBService
+        );
+
+        List<UserService> userServices = List.of(
+                userIMService,
+                userFileService,
+                userDBService
+        );
+
+        for (UserService userService : userServices) {
+            boolean productListed = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Jacket", "Red", 40, 50.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed);
+        }
+
+        for(AdminService adminService:adminServices){
+            boolean deletedProduct=adminService.deleteProduct(admin.getUserName(),admin.getPassword(),1);
+            assertTrue(deletedProduct);
+        }
+
+        try {
+            for (AdminService adminService: adminServices) {
+                boolean deletedProduct = adminService.deleteProduct(admin.getUserName(), admin.getPassword(), -1);
+                assertFalse(deletedProduct);
+            }
+        } catch (EntityNotFoundException e) {
+            assertEquals("Product with ID -1 does not exist.", e.getMessage());
+        }
+
+
+
+
+        for(IRepository<Product> productRepo:productRepositories){
+            Product deletedProduct=productRepo.read(1);
+            assertNull(deletedProduct);
+        }
+
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.delete(admin.getId());
+        }
+        for (IRepository<User> userRepo : userRepositories) {
+
+            userRepo.delete(seller.getId());
+        }
+
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.delete(categoryOuterwear.getId());
+        }
+
+
+
+
+
+
+    }
+
+
+
+
+
 
 
 
