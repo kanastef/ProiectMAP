@@ -1,0 +1,4 @@
+1,SellerUser,Password1,seller@gmail.com,0789123456,0.0,0
+2,BuyerUser,Password2,buyer@gmail.com,0789234567,0.0,0
+1,JeremyReef,Password2,jeremyreef@gamil.com,0784556211,0.0,0
+2,MarryStone,Secure123,marrystone@gmail.com,0789234123,0.0,0

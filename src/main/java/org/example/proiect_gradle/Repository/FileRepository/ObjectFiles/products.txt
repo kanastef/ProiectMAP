@@ -1,0 +1,2 @@
+1,0,Vintage Jacket,Red,40,50.0,BrandName,Good condition,0,0,0,true
+1,0,Vintage Jacket,Red,40,50.0,BrandName,Good condition,0,0,1,true
