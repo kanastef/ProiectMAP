@@ -17,37 +17,38 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
-        String userFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/users.txt";
-        String productFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/products.txt";
-        String categoriesFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/categories.txt";
-        String offersFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/offers.txt";
-        String orderFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/orders.txt";
-        String reviewsFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/reviews.txt";
-        String adminsFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/admins.txt";
-        String visitorsFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/visitors.txt";
-        String likedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/likedProducts.txt";
-        String orderedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/orderedProducts.txt";
-        VisitorFileRepository visitorRepo = new VisitorFileRepository(visitorsFilename);
-        UserFileRepository userRepo = new UserFileRepository(userFilename, likedProducts);
-        ProductFileRepository productRepo = new ProductFileRepository(productFilename);
-        CategoryFileRepository categoryRepo = new CategoryFileRepository(categoriesFilename);
-        OfferFileRepository offerRepo = new OfferFileRepository(offersFilename);
-        OrderFileRepository orderRepo = new OrderFileRepository(orderFilename, orderedProducts);
-        ReviewFileRepository reviewRepo = new ReviewFileRepository(reviewsFilename);
-        AdminFileRepository adminRepo = new AdminFileRepository(adminsFilename);
-//        DBAdminRepository adminRepo = new DBAdminRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//        DBUserRepository userRepo = new DBUserRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//        DBProductRepository productRepo = new DBProductRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//        DBOfferRepository offerRepo = new DBOfferRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//        DBOrderRepository orderRepo = new DBOrderRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//        DBCategoryRepository categoryRepo = new DBCategoryRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//        DBReviewRepository reviewRepo = new DBReviewRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//        DBVisitorRepository visitorRepo = new DBVisitorRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+//        String userFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/users.txt";
+//        String productFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/products.txt";
+//        String categoriesFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/categories.txt";
+//        String offersFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/offers.txt";
+//        String orderFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/orders.txt";
+//        String reviewsFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/reviews.txt";
+//        String adminsFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/admins.txt";
+//        String visitorsFilename = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/visitors.txt";
+//        String likedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/likedProducts.txt";
+//        String listedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/listedProducts.txt";
+//        String orderedProducts = "src/main/java/org/example/proiect_gradle/Repository/FileRepository/ObjectFiles/orderedProducts.txt";
+//        VisitorFileRepository vRepo = new VisitorFileRepository(visitorsFilename);
+//        UserFileRepository userRepo = new UserFileRepository(userFilename, listedProducts, likedProducts);
+//        ProductFileRepository productRepo = new ProductFileRepository(productFilename);
+//        CategoryFileRepository categoryRepo = new CategoryFileRepository(categoriesFilename);
+//        OfferFileRepository offerRepo = new OfferFileRepository(offersFilename);
+//        OrderFileRepository orderRepo = new OrderFileRepository(orderFilename, orderedProducts);
+//        ReviewFileRepository reviewRepo = new ReviewFileRepository(reviewsFilename);
+//        AdminFileRepository adminRepo = new AdminFileRepository(adminsFilename);
+        DBAdminRepository adminRepo = new DBAdminRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+        DBUserRepository userRepo = new DBUserRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+        DBProductRepository productRepo = new DBProductRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+        DBOfferRepository offerRepo = new DBOfferRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+        DBOrderRepository orderRepo = new DBOrderRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+        DBCategoryRepository categoryRepo = new DBCategoryRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+        DBReviewRepository reviewRepo = new DBReviewRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+        DBVisitorRepository visitorRepo = new DBVisitorRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
         VisitorService visitorService = new VisitorService(userRepo, productRepo, reviewRepo, categoryRepo);
         UserService userService = new UserService(userRepo, productRepo, reviewRepo, categoryRepo, orderRepo, offerRepo);
         AdminService adminService = new AdminService(userRepo, productRepo, reviewRepo, adminRepo, categoryRepo, orderRepo);
         Controller controller = new Controller(adminService, userService, visitorService);
-//        ConsoleApp console = new ConsoleApp(controller);
+        ConsoleApp console = new ConsoleApp(controller);
 
 
 

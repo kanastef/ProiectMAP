@@ -1,6 +1,15 @@
 package org.example.proiect_gradle.Repository.FileRepository;
 
 import org.example.proiect_gradle.Domain.Offer;
+import org.example.proiect_gradle.Domain.User;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 public class OfferFileRepository extends FileRepository<Offer> {
 
@@ -44,9 +53,22 @@ public class OfferFileRepository extends FileRepository<Offer> {
             throw new IllegalArgumentException("Error parsing user data: " + line, e);
         }
 
-
-
-
-
     }
+
+//    @Override
+//    public List<Offer> findByCriteria(Predicate<Offer> predicate) {
+//        List<Offer> matchingOffers = new ArrayList<>();
+//        try (BufferedReader reader = new BufferedReader(new FileReader(super.filename))) {
+//            String line;
+//            while ((line = reader.readLine()) != null) {
+//               Offer offer = createObjectFromString(line);
+//                if (predicate.test(offer)) {
+//                    matchingOffers.add(offer);
+//                }
+//            }
+//        } catch (IOException e) {
+//            System.err.println("Error reading users for criteria search: " + e.getMessage());
+//        }
+//        return matchingOffers;
+//    }
 }
