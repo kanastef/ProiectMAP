@@ -70,7 +70,7 @@ public class ApplicationTests {
     UserService userDBService = new UserService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository, dbOrderRepository, dbOfferRepository);
     AdminService adminDBService = new AdminService(dbUserRepository, dbProductRepository, dbReviewRepository, dbAdminRepository, dbCategoryRepository, dbOrderRepository);
 //    Controller controller = new Controller(adminService, userService, visitorService);
-    //ConsoleApp console = new ConsoleApp(controller);
+//    ConsoleApp console = new ConsoleApp(controller);
 
 
     @Test
@@ -1312,25 +1312,331 @@ public class ApplicationTests {
 
     }
 
+    @Test
+    public void testDeleteReview(){
+
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
+        List<IRepository<Review>> reviewRepositories=List.of(reviewIMRepository,reviewFileRepository,dbReviewRepository);
+        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository, dbOrderRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+
+
+            User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
+        User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
+        Category categoryOuterwear = new Category(CategoryName.OUTERWEAR);
+
+
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.create(buyer);
+            userRepo.create(seller);
+        }
+
+
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.create(categoryOuterwear);
+        }
+
+        List<UserService> userServices = List.of(
+                userIMService,
+                userFileService,
+                userDBService
+        );
+
+
+        for (UserService userService : userServices) {
+            boolean productListed = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Jacket", "Red", 40, 50.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed);
+        }
+
+
+
+        for (UserService userService : userServices) {
+            boolean orderPlaced = userService.placeOrder(
+                    buyer.getUserName(),
+                    buyer.getPassword(),
+                    List.of(1),
+                    "Pending",
+                    "1234 Shipping St."
+            );
+            assertTrue(orderPlaced);
+
+        }
+
+        for(UserService userService:userServices){
+            boolean reviewWritten=userService.writeReview(buyer.getUserName(), buyer.getPassword(), 4,"Very good service",2);
+            assertTrue(reviewWritten);
+        }
+
+
+        for (UserService userService : userServices) {
+            boolean reviewDeleted = userService.deleteReview(buyer.getUserName(), buyer.getPassword(), 1);
+            assertTrue(reviewDeleted);
+        }
+
+        for (IRepository<Review> reviewRepo : reviewRepositories) {
+            List<Review> reviews = reviewRepo.findByCriteria(o -> o.getReviewer() == buyer.getId());
+            assertEquals(0, reviews.size());
+        }
+
+
+        try {
+
+            for (UserService userService : userServices) {
+                boolean reviewDeleted = userService.deleteReview(buyer.getUserName(), buyer.getPassword(), -1);
+                assertFalse(reviewDeleted);
+            }
+        } catch (EntityNotFoundException e) {
+            assertEquals("Review with ID -1 not found.", e.getMessage());  // Expected exception message
+        } catch (Exception e) {
+            fail("Unexpected exception: " + e.getMessage());
+        }
 
 
 
 
+        List<Integer> userIdsToDelete = List.of(buyer.getId(), seller.getId());
+        List<Integer> categoryIdsToDelete = List.of(categoryOuterwear.getId());
 
 
+        for (IRepository<Order> orderRepo : orderRepositories) {
+            orderRepo.delete(1);
+        }
+
+        for (IRepository<User> userRepo : userRepositories) {
+            for (Integer userId : userIdsToDelete) {
+                userRepo.delete(userId);
+            }
+        }
+        for (IRepository<Product> productRepo : productRepositories) {
+            productRepo.delete(1);
+        }
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            for (Integer categoryId : categoryIdsToDelete) {
+                categoryRepo.delete(categoryId);
+            }
+        }
 
 
+    }
+
+    @Test
+    public void testLikeProduct() {
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
 
 
+        User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
+        User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
+        Category categoryOuterwear = new Category(CategoryName.OUTERWEAR);
 
 
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.create(buyer);
+            userRepo.create(seller);
+        }
 
 
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.create(categoryOuterwear);
+        }
+
+        List<UserService> userServices = List.of(
+                userIMService,
+                userFileService,
+                userDBService
+        );
 
 
+        for (UserService userService : userServices) {
+            boolean productListed = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Jacket", "Red", 40, 50.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed);
+        }
 
 
+        for (UserService userService : userServices) {
+            boolean addedToFavorites = userService.addToFavorites(buyer.getUserName(), buyer.getPassword(), 1);
+            assertTrue(addedToFavorites);
 
+            List<Integer> likedProducts = buyer.getFavourites();
+            for (int likedProductId : likedProducts) {
+                assertEquals(1, likedProductId);
+            }
+        }
+
+        try {
+            for (UserService userService : userServices) {
+                boolean addedToFavorites = userService.addToFavorites(buyer.getUserName(), buyer.getPassword(), -1);
+                assertFalse(addedToFavorites);
+            }
+        } catch (EntityNotFoundException e) {
+            assertEquals("Product with ID -1 not found.", e.getMessage());
+        }
+
+
+        List<Integer> userIdsToDelete = List.of(buyer.getId(), seller.getId());
+        List<Integer> categoryIdsToDelete = List.of(categoryOuterwear.getId());
+        for (IRepository<User> userRepo : userRepositories) {
+            for (Integer userId : userIdsToDelete) {
+                userRepo.delete(userId);
+            }
+        }
+        for (IRepository<Product> productRepo : productRepositories) {
+            productRepo.delete(1);
+        }
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            for (Integer categoryId : categoryIdsToDelete) {
+                categoryRepo.delete(categoryId);
+            }
+
+        }
+    }
+
+    @Test
+    public void testRemoveFromFavourites() {
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+
+
+        User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
+        User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
+        Category categoryOuterwear = new Category(CategoryName.OUTERWEAR);
+
+
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.create(buyer);
+            userRepo.create(seller);
+        }
+
+
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.create(categoryOuterwear);
+        }
+
+        List<UserService> userServices = List.of(
+                userIMService,
+                userFileService,
+                userDBService
+        );
+
+
+        for (UserService userService : userServices) {
+            boolean productListed = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Jacket", "Red", 40, 50.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed);
+        }
+
+
+        for (UserService userService : userServices) {
+            boolean addedToFavorites = userService.addToFavorites(buyer.getUserName(), buyer.getPassword(), 1);
+            assertTrue(addedToFavorites);
+
+        }
+
+
+        for (UserService userService : userServices) {
+            boolean removedFromFavorites = userService.removeFromFavourites(buyer.getUserName(), buyer.getPassword(), 1);
+            assertTrue(removedFromFavorites);
+
+            assertEquals(0, buyer.getFavourites().size());
+        }
+
+        try {
+            for (UserService userService : userServices) {
+                boolean removedFromFavorites = userService.removeFromFavourites(buyer.getUserName(), buyer.getPassword(), -1);
+                assertFalse(removedFromFavorites);
+            }
+        } catch (EntityNotFoundException e) {
+            assertEquals("Product with ID -1 not found.", e.getMessage());
+        }
+
+
+        List<Integer> userIdsToDelete = List.of(buyer.getId(), seller.getId());
+        List<Integer> categoryIdsToDelete = List.of(categoryOuterwear.getId());
+        for (IRepository<User> userRepo : userRepositories) {
+            for (Integer userId : userIdsToDelete) {
+                userRepo.delete(userId);
+            }
+        }
+        for (IRepository<Product> productRepo : productRepositories) {
+            productRepo.delete(1);
+        }
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            for (Integer categoryId : categoryIdsToDelete) {
+                categoryRepo.delete(categoryId);
+            }
+
+        }
+    }
+
+
+    @Test
+    public void testDeleteListedProduct() {
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+
+
+        User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
+        User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
+        Category categoryOuterwear = new Category(CategoryName.OUTERWEAR);
+
+
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.create(buyer);
+            userRepo.create(seller);
+        }
+
+
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.create(categoryOuterwear);
+        }
+
+        List<UserService> userServices = List.of(
+                userIMService,
+                userFileService,
+                userDBService
+        );
+
+
+        for (UserService userService : userServices) {
+            boolean productListed = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Jacket", "Red", 40, 50.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed);
+        }
+
+        for (UserService userService : userServices) {
+            boolean deleted = userService.deleteListedProduct(seller.getUserName(), seller.getPassword(), 1);
+            assertTrue(deleted);
+        }
+
+        try {
+            for (UserService userService : userServices) {
+                boolean deleted = userService.deleteListedProduct(seller.getUserName(), seller.getPassword(), -1);
+                assertFalse(deleted);
+            }
+        } catch (EntityNotFoundException e) {
+            assertEquals("Product with ID -1 not listed by the user.", e.getMessage());
+        }
+
+        List<Integer> userIdsToDelete = List.of(buyer.getId(), seller.getId());
+        List<Integer> categoryIdsToDelete = List.of(categoryOuterwear.getId());
+        for (IRepository<User> userRepo : userRepositories) {
+            for (Integer userId : userIdsToDelete) {
+                userRepo.delete(userId);
+            }
+        }
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            for (Integer categoryId : categoryIdsToDelete) {
+                categoryRepo.delete(categoryId);
+            }
+
+        }
+    }
 
 
 
