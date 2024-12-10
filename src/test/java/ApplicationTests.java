@@ -70,7 +70,7 @@ public class ApplicationTests {
     UserService userDBService = new UserService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository, dbOrderRepository, dbOfferRepository);
     AdminService adminDBService = new AdminService(dbUserRepository, dbProductRepository, dbReviewRepository, dbAdminRepository, dbCategoryRepository, dbOrderRepository);
 //    Controller controller = new Controller(adminService, userService, visitorService);
-    ConsoleApp console = new ConsoleApp(controller);
+    //ConsoleApp console = new ConsoleApp(controller);
 
 
     @Test
@@ -1078,8 +1078,8 @@ public class ApplicationTests {
                     assertEquals(1, orderedProduct);
                 }
                 assertEquals("1234 Shipping St.", receivedOrder.getShippingAddress());
-                assertEquals(2, receivedOrder.getBuyer());
-                assertEquals(1, receivedOrder.getSeller());
+                assertEquals(1, receivedOrder.getBuyer());
+                assertEquals(2, receivedOrder.getSeller());
             }
         }
         List<Integer> userIdsToDelete = List.of(buyer.getId(), seller.getId());
