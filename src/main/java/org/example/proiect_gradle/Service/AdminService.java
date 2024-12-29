@@ -47,6 +47,10 @@ public class AdminService extends VisitorService {
         return !admins.isEmpty();
     }
 
+    public List<Visitor> getVisitors() {
+        return visitorRepo.getAll();
+    }
+
     /**
      * Deletes a user from the repository if the admin is authenticated.
      *

@@ -267,7 +267,9 @@ public class Controller {
         return adminService.deleteProduct(adminUsername, adminPassword, productId);
     }
 
-
+    public List<Visitor> getVisitors() {
+        return adminService.getVisitors();
+    }
 
     public List<Category> getCategories(){
         return adminService.getAllCategories();

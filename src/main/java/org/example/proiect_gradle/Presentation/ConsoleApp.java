@@ -1675,6 +1675,7 @@ public class ConsoleApp {
             System.out.println("Admin Menu:");
             System.out.println("1. Manage Products");
             System.out.println("2. Manage Users");
+            System.out.println("3. See Visitor Activity");
             System.out.println("0. Log Out");
 
             int choice = -1;
@@ -1686,7 +1687,7 @@ public class ConsoleApp {
                         throw new ValidationException("Invalid input: Please enter a valid number.");
                     }
                     choice = Integer.parseInt(input);
-                    if (choice < 0 || choice > 2) {
+                    if (choice < 0 || choice > 3) {
                         throw new ValidationException("Invalid choice: Please select 0, 1, or 2.");
                     }
                     break;
@@ -1698,6 +1699,7 @@ public class ConsoleApp {
             switch (choice) {
                 case 1 -> manageProducts(username, password);
                 case 2 -> manageUsers(username, password);
+                case 3 -> seeVisitorActivity(username, password);
                 case 0 -> {
                     loggedIn = false;
                     System.out.println("Logging out...");
@@ -2129,6 +2131,14 @@ public class ConsoleApp {
                 System.out.println("Failed to delete product.");
         } else {
             System.out.println("Product deletion canceled.");
+        }
+    }
+
+    private void seeVisitorActivity(String username, String password) {
+        System.out.println("The Marketplace App has been visited by: ");
+        List<Visitor> visitors = controller.getVisitors();
+        for (Visitor visitor : visitors) {
+            System.out.println(visitor);
         }
     }
 

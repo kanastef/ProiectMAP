@@ -27,6 +27,13 @@ public class Visitor implements Identifiable{
         this.visitDate = visitDate;
     }
 
-
-
+    @Override
+    public String toString() {
+        return "\n==============================" +
+                "\n        VISITOR DETAILS       " +
+                "\n==============================" +
+                "\nID          : " + id +
+                "\nVisit Date  : " + visitDate +
+                "\n==============================";
+    }
 }

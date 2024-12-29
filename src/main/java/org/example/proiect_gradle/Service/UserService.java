@@ -295,10 +295,11 @@ public class UserService extends VisitorService {
                     if (product == null) {
                         throw new EntityNotFoundException("Product with ID " + selectedProductsId + " not found.");
                     }
-
-                    product.setAvailable(false);
-                    productRepo.update(product);
-                    productsBySeller.computeIfAbsent(product.getListedBy(), k -> new ArrayList<>()).add(selectedProductsId);
+                    else if (product.isAvailable()) {
+                        product.setAvailable(false);
+                        productRepo.update(product);
+                        productsBySeller.computeIfAbsent(product.getListedBy(), k -> new ArrayList<>()).add(selectedProductsId);
+                    }
                 }
 
                 for (Map.Entry<Integer, List<Integer>> entry : productsBySeller.entrySet()) {
@@ -445,6 +446,12 @@ public class UserService extends VisitorService {
                 }
 
                 if (!reviewee.getUserName().equals(reviewerUsername)) {
+                    List<Review> allReviews = reviewRepo.getAll();
+                    boolean alreadyReviewed = allReviews.stream()
+                            .anyMatch(r -> r.getReviewer() == reviewer.getId() && r.getReviewee() == reviewee.getId());
+                    if (alreadyReviewed) {
+                        throw new BusinessLogicException("You have already reviewed this user.");
+                    }
                     for (Order order : displayMadeOrders(reviewerUsername, reviewerPassword)) {
                         if (order.getSeller() == reviewee.getId()) {
                             Review review = new Review(grade, message, reviewer.getId(), reviewee.getId());
@@ -540,7 +547,7 @@ public class UserService extends VisitorService {
                     throw new EntityNotFoundException("Product with ID " + productId + " not found.");
                 }
 
-                if (!user.getFavourites().contains(productId)) {
+                if (!user.getFavourites().contains(productId) && productId != user.getId()) {
                     user.getFavourites().add(productId);
                     System.out.println(user.getFavourites());
                     userRepo.update(user);
