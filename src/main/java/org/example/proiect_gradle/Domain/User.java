@@ -55,9 +55,12 @@ public class User extends Account implements Identifiable {
 
     @Override
     public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", userName='" + userName + '\'' +
-                '}';
+        return "\n==============================" +
+                "\n         USER DETAILS        " +
+                "\n==============================" +
+                "\nID          : " + id +
+                "\nUsername    : " + userName +
+                "\nRating      : " + score +
+                "\n==============================";
     }
 }

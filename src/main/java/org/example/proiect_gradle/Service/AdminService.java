@@ -12,7 +12,7 @@ public class AdminService extends VisitorService {
     protected final IRepository<Admin> adminRepo;
     protected final IRepository<Category> categoryRepo;
     protected final IRepository<Order> orderRepo;
-
+    protected final IRepository<Visitor> visitorRepo;
 
 
     /**
@@ -27,11 +27,12 @@ public class AdminService extends VisitorService {
      */
     public AdminService(IRepository<User> userRepo, IRepository<Product> productRepo,
                         IRepository<Review> reviewRepo, IRepository<Admin> adminRepo,
-                        IRepository<Category> categoryRepo, IRepository<Order> orderRepo) {
+                        IRepository<Category> categoryRepo, IRepository<Order> orderRepo, IRepository<Visitor> visitorRepo) {
         super(userRepo, productRepo, reviewRepo, categoryRepo);
         this.adminRepo = adminRepo;
-        this.categoryRepo=categoryRepo;
+        this.categoryRepo= categoryRepo;
         this.orderRepo = orderRepo;
+        this.visitorRepo = visitorRepo;
     }
 
     /**

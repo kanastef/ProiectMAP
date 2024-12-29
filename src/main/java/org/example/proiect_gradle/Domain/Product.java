@@ -128,21 +128,24 @@ public class Product implements Identifiable{
 
     @Override
     public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", category=" + category +
-                ", name='" + name + '\'' +
-                ", color='" + color + '\'' +
-                ", size=" + size +
-                ", price=" + price +
-                ", brand='" + brand + '\'' +
-                ", condition='" + condition + '\'' +
-                ", nrViews=" + nrViews +
-                ", nrLikes=" + nrLikes +
-                ", listedBy=" + listedBy +
-                ", available=" + available +
-                '}';
+        return "\n==============================" +
+                "\n        PRODUCT DETAILS       " +
+                "\n==============================" +
+                "\nID          : " + id +
+                "\nCategory    : " + category +
+                "\nName        : " + name +
+                "\nColor       : " + color +
+                "\nSize        : " + size +
+                "\nPrice       : $" + String.format("%.2f", price) +
+                "\nBrand       : " + brand +
+                "\nCondition   : " + condition +
+                "\nViews       : " + nrViews +
+                "\nLikes       : " + nrLikes +
+                "\nListed By   : " + listedBy +
+                "\nAvailable   : " + (available ? "Yes" : "No") +
+                "\n==============================";
     }
+
 
     @Override
     public boolean equals(Object o) {

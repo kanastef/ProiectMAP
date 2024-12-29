@@ -14,7 +14,9 @@ import org.example.proiect_gradle.Repository.DBRepository.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 
 public class ApplicationTests {
@@ -48,34 +50,34 @@ public class ApplicationTests {
     ReviewFileRepository reviewFileRepository = new ReviewFileRepository(reviewsFilename);
     AdminFileRepository adminFileRepository = new AdminFileRepository(adminsFilename);
 
-    DBAdminRepository dbAdminRepository = new DBAdminRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-    DBUserRepository dbUserRepository = new DBUserRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-    DBProductRepository dbProductRepository = new DBProductRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-    DBOfferRepository dbOfferRepository = new DBOfferRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-    DBOrderRepository dbOrderRepository = new DBOrderRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-    DBCategoryRepository dbCategoryRepository = new DBCategoryRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-    DBReviewRepository dbReviewRepository = new DBReviewRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-    DBVisitorRepository dbVisitorRepository = new DBVisitorRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+//    DBAdminRepository dbAdminRepository = new DBAdminRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+//    DBUserRepository dbUserRepository = new DBUserRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+//    DBProductRepository dbProductRepository = new DBProductRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+//    DBOfferRepository dbOfferRepository = new DBOfferRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+//    DBOrderRepository dbOrderRepository = new DBOrderRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+//    DBCategoryRepository dbCategoryRepository = new DBCategoryRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+//    DBReviewRepository dbReviewRepository = new DBReviewRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+//    DBVisitorRepository dbVisitorRepository = new DBVisitorRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
 
     VisitorService visitorIMService= new VisitorService(userIMRepository,productIMRepository,reviewIMRepository,categoryIMRepository);
     UserService userIMService=new UserService(userIMRepository,productIMRepository,reviewIMRepository,categoryIMRepository,orderIMRepository,offerIMRepository);
-    AdminService adminIMService=new AdminService(userIMRepository,productIMRepository,reviewIMRepository,adminIMRepository,categoryIMRepository,orderIMRepository);
+    AdminService adminIMService=new AdminService(userIMRepository,productIMRepository,reviewIMRepository,adminIMRepository,categoryIMRepository,orderIMRepository,visitorIMRepository);
 
     VisitorService visitorFileService=new VisitorService(userFileRepository,productFileRepository,reviewFileRepository,categoryFileRepository);
     UserService userFileService=new UserService(userFileRepository,productFileRepository,reviewFileRepository,categoryFileRepository,orderFileRepository,offerFileRepository);
-    AdminService adminFileService=new AdminService(userFileRepository,productFileRepository,reviewFileRepository,adminFileRepository,categoryFileRepository,orderFileRepository);
+    AdminService adminFileService=new AdminService(userFileRepository,productFileRepository,reviewFileRepository,adminFileRepository,categoryFileRepository,orderFileRepository,visitorFileRepository);
 
 
-    VisitorService visitorDBService = new VisitorService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository);
-    UserService userDBService = new UserService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository, dbOrderRepository, dbOfferRepository);
-    AdminService adminDBService = new AdminService(dbUserRepository, dbProductRepository, dbReviewRepository, dbAdminRepository, dbCategoryRepository, dbOrderRepository);
-//    Controller controller = new Controller(adminService, userService, visitorService);
+//    VisitorService visitorDBService = new VisitorService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository);
+//    UserService userDBService = new UserService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository, dbOrderRepository, dbOfferRepository);
+//    AdminService adminDBService = new AdminService(dbUserRepository, dbProductRepository, dbReviewRepository, dbAdminRepository, dbCategoryRepository, dbOrderRepository);
+////    Controller controller = new Controller(adminService, userService, visitorService);
 //    ConsoleApp console = new ConsoleApp(controller);
 
 
     @Test
     public void testCrudUser() {
-        List<IRepository<User>> repositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
+        List<IRepository<User>> repositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
 
         for(IRepository<User> repository : repositories) {
             User user1 = new User("MarryStone", "Secure123", "marrystone@gmail.com", "0789234123", 0);
@@ -114,7 +116,7 @@ public class ApplicationTests {
     @Test
     public void testCrudAdmin(){
 
-        List<IRepository<Admin>> repositories=List.of(adminIMRepository,adminFileRepository,dbAdminRepository);
+        List<IRepository<Admin>> repositories=List.of(adminIMRepository,adminFileRepository);//,dbAdminRepository);
 
         for(IRepository<Admin> repository:repositories){
             Admin admin1 =new Admin("AdamBeckner","Password1","adambeckner@email.com","0789447512");
@@ -149,7 +151,7 @@ public class ApplicationTests {
     @Test
     public void testCrudVisitor() {
         LocalDateTime now = LocalDateTime.of(2023, 7, 15, 14, 37, 25);
-        List<IRepository<Visitor>> repositories = List.of(visitorIMRepository, visitorFileRepository, dbVisitorRepository);
+        List<IRepository<Visitor>> repositories = List.of(visitorIMRepository, visitorFileRepository);//, dbVisitorRepository);
 
         for (IRepository<Visitor> repository : repositories) {
             Visitor visitor1 = new Visitor(now);
@@ -183,9 +185,9 @@ public class ApplicationTests {
         User user1 = new User("JeremyReef", "Password2", "jeremyreef@gamil.com", "0784556211", 0.0);
 
 
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryFileRepository, dbCategoryRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
 
         Category categoryTops = new Category(CategoryName.TOPS);
 
@@ -249,7 +251,7 @@ public class ApplicationTests {
     @Test
     public void testCrudCategory() {
 
-        List<IRepository<Category>> repositories = List.of(categoryFileRepository, dbCategoryRepository);
+        List<IRepository<Category>> repositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
 
         for (IRepository<Category> repository : repositories) {
             Category category1 = new Category(CategoryName.OUTERWEAR);
@@ -286,10 +288,10 @@ public class ApplicationTests {
 
 
 
-        List<IRepository<Review>> reviewRepositories = List.of(reviewIMRepository, reviewFileRepository, dbReviewRepository);
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryFileRepository, dbCategoryRepository);
+        List<IRepository<Review>> reviewRepositories = List.of(reviewIMRepository, reviewFileRepository);//, dbReviewRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
 
         for (IRepository<Category> categoryRepository : categoryRepositories) {
             categoryRepository.create(categoryTops);
@@ -383,7 +385,7 @@ public class ApplicationTests {
         List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository);//, dbOfferRepository);
         List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
         List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryFileRepository);//, dbCategoryRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
 
 
         for (IRepository<User> userRepository : userRepositories) {
@@ -482,10 +484,10 @@ public class ApplicationTests {
 
 
 
-        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository, dbOrderRepository);
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryFileRepository, dbCategoryRepository);
+        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository);//, dbOrderRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
 
 
         for (IRepository<User> userRepository : userRepositories) {
@@ -578,10 +580,10 @@ public class ApplicationTests {
 
     @Test
     public void testSendOffer() {
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
-        List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository, dbOfferRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository,categoryFileRepository, dbCategoryRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
+        List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository);//, dbOfferRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository,categoryFileRepository);//, dbCategoryRepository);
 
         User user1 = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
         User user2 = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
@@ -603,8 +605,8 @@ public class ApplicationTests {
 
         List<UserService> userServices = List.of(
                 userIMService,
-                userFileService,
-                userDBService
+                userFileService
+                //userDBService
         );
 
         for (UserService userService : userServices) {
@@ -686,10 +688,10 @@ public class ApplicationTests {
 
     @Test
     public void testAcceptOffer() {
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
-        List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository, dbOfferRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
+        List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository);//, dbOfferRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
 
         User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
         User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
@@ -761,10 +763,10 @@ public class ApplicationTests {
 
     @Test
     public void testDeclineOffer() {
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
-        List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository, dbOfferRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
+        List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository);//, dbOfferRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
 
         User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
         User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
@@ -839,10 +841,10 @@ public class ApplicationTests {
 
     @Test
     public void testDisplayAllUsersOffers() {
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository, dbOfferRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Offer>> offerRepositories = List.of(offerIMRepository, offerFileRepository);//, dbOfferRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
 
         User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
         User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
@@ -860,8 +862,8 @@ public class ApplicationTests {
 
         List<UserService> userServices = List.of(
                 userIMService,
-                userFileService,
-                userDBService
+                userFileService
+                //userDBService
         );
 
         for (UserService userService : userServices) {
@@ -920,10 +922,10 @@ public class ApplicationTests {
 
     @Test
     public void testPlaceOrder() {
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
-        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository, dbOrderRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
+        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository);//, dbOrderRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
 
         User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
         User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
@@ -942,8 +944,8 @@ public class ApplicationTests {
 
         List<UserService> userServices = List.of(
                 userIMService,
-                userFileService,
-                userDBService
+                userFileService
+                //userDBService
         );
 
 
@@ -1027,10 +1029,10 @@ public class ApplicationTests {
 
     @Test
     public void testDisplayAllUserOrders() {
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository, dbOrderRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository);//, dbOrderRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
 
         User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
         User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
@@ -1049,8 +1051,8 @@ public class ApplicationTests {
 
         List<UserService> userServices = List.of(
                 userIMService,
-                userFileService,
-                userDBService
+                userFileService
+                //userDBService
         );
 
 
@@ -1108,11 +1110,11 @@ public class ApplicationTests {
 
     @Test
     public void writeReview() {
-    List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-    List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
-    List<IRepository<Review>> reviewRepositories=List.of(reviewIMRepository,reviewFileRepository,dbReviewRepository);
-    List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository, dbOrderRepository);
-    List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+    List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+    List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
+    List<IRepository<Review>> reviewRepositories=List.of(reviewIMRepository,reviewFileRepository);//,dbReviewRepository);
+    List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository);//, dbOrderRepository);
+    List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
 
 
         User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
@@ -1132,8 +1134,8 @@ public class ApplicationTests {
 
     List<UserService> userServices = List.of(
             userIMService,
-            userFileService,
-            userDBService
+            userFileService
+            //userDBService
     );
 
 
@@ -1222,11 +1224,11 @@ public class ApplicationTests {
 
     @Test
     public void testDisplayMadeReviews(){
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
-        List<IRepository<Review>> reviewRepositories=List.of(reviewIMRepository,reviewFileRepository,dbReviewRepository);
-        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository, dbOrderRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
+        List<IRepository<Review>> reviewRepositories=List.of(reviewIMRepository,reviewFileRepository);//,dbReviewRepository);
+        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository);//, dbOrderRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
 
 
         User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
@@ -1246,8 +1248,8 @@ public class ApplicationTests {
 
         List<UserService> userServices = List.of(
                 userIMService,
-                userFileService,
-                userDBService
+                userFileService
+                //userDBService
         );
 
 
@@ -1315,11 +1317,11 @@ public class ApplicationTests {
     @Test
     public void testDeleteReview(){
 
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
-        List<IRepository<Review>> reviewRepositories=List.of(reviewIMRepository,reviewFileRepository,dbReviewRepository);
-        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository, dbOrderRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
+        List<IRepository<Review>> reviewRepositories=List.of(reviewIMRepository,reviewFileRepository);//,dbReviewRepository);
+        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository);//, dbOrderRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
 
 
             User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
@@ -1339,8 +1341,8 @@ public class ApplicationTests {
 
         List<UserService> userServices = List.of(
                 userIMService,
-                userFileService,
-                userDBService
+                userFileService
+                //userDBService
         );
 
 
@@ -1423,9 +1425,9 @@ public class ApplicationTests {
 
     @Test
     public void testLikeProduct() {
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
 
 
         User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
@@ -1445,8 +1447,8 @@ public class ApplicationTests {
 
         List<UserService> userServices = List.of(
                 userIMService,
-                userFileService,
-                userDBService
+                userFileService
+                //userDBService
         );
 
 
@@ -1497,9 +1499,9 @@ public class ApplicationTests {
 
     @Test
     public void testRemoveFromFavourites() {
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
 
 
         User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
@@ -1519,8 +1521,8 @@ public class ApplicationTests {
 
         List<UserService> userServices = List.of(
                 userIMService,
-                userFileService,
-                userDBService
+                userFileService
+                //userDBService
         );
 
 
@@ -1576,9 +1578,9 @@ public class ApplicationTests {
 
     @Test
     public void testDeleteListedProduct() {
-        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository, dbUserRepository);
-        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository, dbCategoryRepository);
-        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository, dbProductRepository);
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
 
 
         User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
@@ -1598,8 +1600,8 @@ public class ApplicationTests {
 
         List<UserService> userServices = List.of(
                 userIMService,
-                userFileService,
-                userDBService
+                userFileService
+                //userDBService
         );
 
 
@@ -1638,6 +1640,351 @@ public class ApplicationTests {
         }
     }
 
+    @Test
+    public void testDeleteUser() {
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Admin>> adminRepositories = List.of(adminIMRepository, adminFileRepository);//, dbAdminRepository);
+        Admin admin = new Admin("AdminUser", "AdminPassword1", "admin@gmail.com", "0747996887");
+        User user = new User("TestUser", "TestPassword1", "testuser@gmail.com", "0758663221", 0.0);
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.create(user);
+        }
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.create(admin);
+        }
+        List<AdminService> adminServices = List.of(
+                adminIMService,
+                adminFileService
+                //adminDBService
+        );
+        List<UserService> userServices = List.of(
+                userIMService,
+                userFileService
+                //userDBService
+        );
+        for (AdminService adminService : adminServices) {
+            boolean deletedUser = adminService.deleteUser(admin.getUserName(), admin.getPassword(), user.getId());
+            assertTrue(deletedUser);
+        }
+        try {
+            for (AdminService adminService: adminServices) {
+                boolean deletedUser= adminService.deleteUser(admin.getUserName(), admin.getPassword(), -1);
+                assertFalse(deletedUser);
+            }
+        } catch (EntityNotFoundException e) {
+            assertEquals("User with ID -1 does not exist.", e.getMessage());
+        }
+        for (IRepository<User> userRepo : userRepositories) {
+            User deletedUser  = userRepo.read(user.getId());
+            assertNull(deletedUser);
+        }
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.delete(admin.getId());
+        }
+    }
+    @Test
+    public void testDeleteReviewAdmin() {
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Review>> reviewRepositories = List.of(reviewIMRepository, reviewFileRepository);//, dbReviewRepository);
+        List<IRepository<Admin>> adminRepositories = List.of(adminIMRepository, adminFileRepository);//, dbAdminRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
+        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository);//, dbOrderRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
+        Admin admin = new Admin("AdminUser", "AdminPassword1", "admin@gmail.com", "0747996887");
+        User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
+        User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
+        Category categoryOuterwear = new Category(CategoryName.OUTERWEAR);
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.create(buyer);
+            userRepo.create(seller);
+        }
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.create(admin);
+        }
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.create(categoryOuterwear);
+        }
+        List<AdminService> adminServices = List.of(
+                adminIMService,
+                adminFileService
+                //adminDBService
+        );
+        List<UserService> userServices = List.of(
+                userIMService,
+                userFileService
+                //userDBService
+        );
+        for (UserService userService : userServices) {
+            boolean productListed = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Jacket", "Red", 40, 50.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed);
+        }
+        for (UserService userService : userServices) {
+            boolean orderPlaced = userService.placeOrder(
+                    buyer.getUserName(),
+                    buyer.getPassword(),
+                    List.of(1),
+                    "Pending",
+                    "1234 Shipping St."
+            );
+            assertTrue(orderPlaced);
+        }
+        for (UserService userService : userServices) {
+            boolean reviewWritten = userService.writeReview(buyer.getUserName(), buyer.getPassword(), 4, "Very good service", 2);
+            assertTrue(reviewWritten);
+        }
+        for (AdminService adminService : adminServices) {
+            boolean reviewDeleted = adminService.deleteReview(admin.getUserName(), admin.getPassword(), 1);
+            assertTrue(reviewDeleted);
+        }
+        try {
+            for (AdminService adminService: adminServices) {
+                boolean deletedReview= adminService.deleteReview(admin.getUserName(), admin.getPassword(), -1);
+                assertFalse(deletedReview);
+            }
+        } catch (EntityNotFoundException e) {
+            assertEquals("Review with ID -1 does not exist.", e.getMessage());
+        }
+        for (IRepository<Review> reviewRepo : reviewRepositories) {
+            Review deletedReview = reviewRepo.read(1);
+            assertNull(deletedReview);
+        }
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.delete(admin.getId());
+        }
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.delete(buyer.getId());
+            userRepo.delete(seller.getId());
+        }
+        for (IRepository<Product> productRepo : productRepositories) {
+            productRepo.delete(1);
+        }
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.delete(categoryOuterwear.getId());
+        }
+        for (IRepository<Order> orderRepo : orderRepositories) {
+            orderRepo.delete(1);
+        }
+    }
+    @Test
+    public void testDeleteProduct() {
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Admin>> adminRepositories = List.of(adminIMRepository, adminFileRepository);//, dbAdminRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
+        Admin admin = new Admin("AdminUser", "AdminPassword1", "admin@gmail.com", "0747996887");
+        User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
+        Category categoryOuterwear = new Category(CategoryName.OUTERWEAR);
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.create(seller);
+        }
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.create(admin);
+        }
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.create(categoryOuterwear);
+        }
+        List<AdminService> adminServices = List.of(
+                adminIMService,
+                adminFileService
+                //adminDBService
+        );
+        List<UserService> userServices = List.of(
+                userIMService,
+                userFileService
+                //userDBService
+        );
+        for (UserService userService : userServices) {
+            boolean productListed = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Jacket", "Red", 40, 50.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed);
+        }
+        for (AdminService adminService : adminServices) {
+            boolean deletedProduct = adminService.deleteProduct(admin.getUserName(), admin.getPassword(), 1);
+            assertTrue(deletedProduct);
+        }
+        try {
+            for (AdminService adminService : adminServices) {
+                boolean deletedProduct = adminService.deleteProduct(admin.getUserName(), admin.getPassword(), -1);
+                assertFalse(deletedProduct);
+            }
+        } catch (EntityNotFoundException e) {
+            assertEquals("Product with ID -1 does not exist.", e.getMessage());
+        }
+        for (IRepository<Product> productRepo : productRepositories) {
+            Product deletedProduct = productRepo.read(1);
+            assertNull(deletedProduct);
+        }
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.delete(admin.getId());
+        }
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.delete(seller.getId());
+        }
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.delete(categoryOuterwear.getId());
+        }
+    }
+
+    @Test
+    public void sortListCategoriesByIncome(){
+
+        List<IRepository<User>> userRepositories = List.of(userIMRepository, userFileRepository);//, dbUserRepository);
+        List<IRepository<Admin>> adminRepositories = List.of(adminIMRepository, adminFileRepository);//, dbAdminRepository);
+        List<IRepository<Category>> categoryRepositories = List.of(categoryIMRepository, categoryFileRepository);//, dbCategoryRepository);
+        List<IRepository<Product>> productRepositories = List.of(productIMRepository, productFileRepository);//, dbProductRepository);
+        List<IRepository<Order>> orderRepositories = List.of(orderIMRepository, orderFileRepository);//, dbOrderRepository);
 
 
-}
+        Admin admin = new Admin("AdminUser", "AdminPassword1", "admin@gmail.com", "0747996887");
+        User seller = new User("SellerUser", "Password1", "seller@gmail.com", "0789123456", 0.0);
+        User buyer = new User("BuyerUser", "Password2", "buyer@gmail.com", "0789234567", 0.0);
+
+        Category categoryOuterwear = new Category(CategoryName.OUTERWEAR);
+        Category categoryBottoms= new Category(CategoryName.BOTTOMS);
+        Category categoryTops = new Category(CategoryName.TOPS);
+
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.create(seller);
+            userRepo.create(buyer);
+        }
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.create(admin);
+        }
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.create(categoryOuterwear);
+            categoryRepo.create(categoryBottoms);
+            categoryRepo.create(categoryTops);
+        }
+        List<AdminService> adminServices = List.of(
+                adminIMService,
+                adminFileService//,
+                //adminDBService
+        );
+        List<UserService> userServices = List.of(
+                userIMService,
+                userFileService//,
+                //userDBService
+        );
+        for (UserService userService : userServices) {
+            boolean productListed1 = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Jacket", "Red", 40, 50.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed1);
+
+
+            boolean productListed2 = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Jacket", "Red", 40, 30.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed2);
+
+            boolean productListed3 = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Top", "Red", 40, 10.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed3);
+
+            boolean productListed4 = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Vintage Top", "Blue", 40, 15.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed4);
+
+            boolean productListed5 = userService.listProduct(seller.getUserName(), seller.getPassword(),
+                    categoryOuterwear.getId(), "Cargo Pants", "Black", 40, 12.00, "BrandName", "Good condition", 0, 0);
+            assertTrue(productListed5);
+        }
+
+        for(IRepository<Product> productRepo : productRepositories ){
+            Product product1=productRepo.read(1);
+            product1.setCategory(categoryOuterwear.getId());
+            productRepo.update(product1);
+
+            Product product2=productRepo.read(2);
+            product2.setCategory(categoryOuterwear.getId());
+            productRepo.update(product2);
+
+            Product product3=productRepo.read(3);
+            product3.setCategory(categoryTops.getId());
+            productRepo.update(product3);
+
+            Product product4=productRepo.read(4);
+            product4.setCategory(categoryTops.getId());
+            productRepo.update(product4);
+
+            Product product5=productRepo.read(5);
+            product5.setCategory(categoryBottoms.getId());
+            productRepo.update(product5);
+
+        }
+
+        for (UserService userService : userServices) {
+            assertTrue(userService.placeOrder(buyer.getUserName(), buyer.getPassword(),
+                    List.of(1, 2), "Completed", "123 Street"));
+            assertTrue(userService.placeOrder(buyer.getUserName(), buyer.getPassword(),
+                    List.of(3, 4), "Completed", "456 Avenue"));
+            assertTrue(userService.placeOrder(buyer.getUserName(), buyer.getPassword(),
+                    List.of(5), "Completed", "789 Boulevard"));
+        }
+
+
+        for (AdminService adminService : adminServices) {
+            Map<String, Double> sortedCategories = adminService.sortCategoriesByIncome();
+
+
+            double expectedOuterwearIncome = 50.00 + 30.00;
+            double expectedTopsIncome = 10.00 + 15.00;
+            double expectedBottomsIncome = 12.00;
+
+
+            Iterator<Map.Entry<String, Double>> iterator = sortedCategories.entrySet().iterator();
+
+
+            assertTrue(iterator.hasNext());
+            Map.Entry<String, Double> firstEntry = iterator.next();
+            assertEquals(CategoryName.OUTERWEAR.toString(), firstEntry.getKey());
+            assertEquals(expectedOuterwearIncome, firstEntry.getValue());
+
+
+            assertTrue(iterator.hasNext());
+            Map.Entry<String, Double> secondEntry = iterator.next();
+            assertEquals(CategoryName.TOPS.toString(), secondEntry.getKey());
+            assertEquals(expectedTopsIncome, secondEntry.getValue());
+
+
+            assertTrue(iterator.hasNext());
+            Map.Entry<String, Double> thirdEntry = iterator.next();
+            assertEquals(CategoryName.BOTTOMS.toString(), thirdEntry.getKey());
+            assertEquals(expectedBottomsIncome, thirdEntry.getValue());
+
+
+            assertFalse(iterator.hasNext());
+        }
+
+        for (IRepository<User> userRepo : userRepositories) {
+            userRepo.delete(buyer.getId());
+            userRepo.delete(seller.getId());
+        }
+        for (IRepository<Admin> adminRepo : adminRepositories) {
+            adminRepo.delete(admin.getId());
+        }
+
+        for (IRepository<Category> categoryRepo : categoryRepositories) {
+            categoryRepo.delete(categoryOuterwear.getId());
+            categoryRepo.delete(categoryBottoms.getId());
+            categoryRepo.delete(categoryTops.getId());
+        }
+
+
+        for (IRepository<Product> productRepo : productRepositories) {
+            productRepo.delete(1);
+            productRepo.delete(2);
+            productRepo.delete(3);
+            productRepo.delete(4);
+            productRepo.delete(5);
+        }
+
+        for (IRepository<Order> orderRepo : orderRepositories) {
+            orderRepo.delete(1);
+            orderRepo.delete(2);
+            orderRepo.delete(3);
+        }
+
+
+    }
+
+    }

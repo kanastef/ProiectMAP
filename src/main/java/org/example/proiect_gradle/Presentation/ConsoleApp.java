@@ -3,18 +3,73 @@ import com.mysql.cj.xdevapi.Schema;
 import org.example.proiect_gradle.Controller.Controller;
 import org.example.proiect_gradle.Domain.*;
 import org.example.proiect_gradle.Exceptions.ValidationException;
+import org.example.proiect_gradle.Repository.IRepository;
+import org.example.proiect_gradle.Repository.RepositoryFactory;
+import org.example.proiect_gradle.Service.AdminService;
+import org.example.proiect_gradle.Service.UserService;
+import org.example.proiect_gradle.Service.VisitorService;
 
 import java.util.*;
 
 public class ConsoleApp {
-    private final Controller controller;
+    private Controller controller;
     private final Scanner scanner = new Scanner(System.in);
 
-    public ConsoleApp(Controller controller) {
-        this.controller = controller;
-    }
+    public ConsoleApp() {}
 
+    public void selectRepositoryType() {
+        System.out.println("Select repository type: ");
+        System.out.println("1. In-Memory Repository");
+        System.out.println("2. File-Based Repository");
+        System.out.println("3. Database Repository");
+        System.out.print("Please select an option: ");
+        int choice;
+        while(true) {
+            try {
+                String input = scanner.nextLine();
+                if (!input.matches("\\d+")) {
+                    throw new ValidationException("Input must be a number.");
+                }
+                choice = Integer.parseInt(input);
+                if (choice < 1 || choice > 3) {
+                    throw new ValidationException("Please enter a number between 1 and 3.");
+                }
+                break;
+            } catch (ValidationException e) {
+                System.out.println("Invalid input: " + e.getMessage());
+                System.out.print("Please select a valid option: ");
+            }
+        }
+
+        String repoType = switch (choice) {
+            case 1 -> "in-memory";
+            case 2 -> "file";
+            case 3 -> "db";
+            default -> throw new IllegalStateException("Unexpected value: " + choice);
+        };
+
+        RepositoryFactory factory = new RepositoryFactory(repoType);
+
+        IRepository<Visitor> visitorRepo = factory.createVisitorRepo();
+        IRepository<User> userRepo = factory.createUserRepository();
+        IRepository<Product> productRepo = factory.createProductRepository();
+        IRepository<Review> reviewRepo = factory.createReviewRepository();
+        IRepository<Category> categoryRepo = factory.createCategoryRepository();
+        IRepository<Order> orderRepo = factory.createOrderRepository();
+        IRepository<Offer> offerRepo = factory.createOfferRepository();
+        IRepository<Admin> adminRepo = factory.createAdminRepository();
+
+        AdminService adminService = new AdminService(userRepo, productRepo, reviewRepo, adminRepo, categoryRepo, orderRepo, visitorRepo);
+        UserService userService = new UserService(userRepo, productRepo, reviewRepo, categoryRepo, orderRepo, offerRepo);
+        VisitorService visitorService = new VisitorService(userRepo, productRepo, reviewRepo, categoryRepo);
+
+        this.controller = new Controller(adminService, userService, visitorService);
+
+        System.out.println("Repository type selected successfully.");
+
+    }
     public void start() {
+        selectRepositoryType();
         boolean running = true;
         while (running) {
             System.out.println("Welcome to the Marketplace App!");
@@ -174,7 +229,7 @@ public class ConsoleApp {
             System.out.println("Product Browsing Options: ");
             System.out.println("1. Sort Products");
             System.out.println("2. Filter Products");
-            System.out.println("0. Go Back to Repo.Main Menu");
+            System.out.println("0. Go Back to Main Menu");
             System.out.print("Choose an option: ");
 
             int choice;
@@ -652,7 +707,7 @@ public class ConsoleApp {
             System.out.println("2. Filter Products");
             System.out.println("3. Select Product for Action (like, offer)");
             System.out.println("4. Place an Order");
-            System.out.println("0. Go Back to Repo.Main Menu");
+            System.out.println("0. Go Back to Main Menu");
             System.out.print("Choose an option: ");
 
             int choice;
@@ -742,7 +797,7 @@ public class ConsoleApp {
 
     private List<Product> filterProducts() {
         System.out.println("Filter Products by: ");
-        System.out.println("1. Domain.Category");
+        System.out.println("1. Category");
         System.out.println("2. Brand");
         System.out.println("3. Color");
         System.out.println("4. Seller");
@@ -1062,7 +1117,7 @@ public class ConsoleApp {
             System.out.println("\nOptions:");
             System.out.println("1. Add Product to My Listings");
             System.out.println("2. Delete Product from My Listings");
-            System.out.println("0. Back to Repo.Main Menu");
+            System.out.println("0. Back to Main Menu");
             boolean validInput = false;
             int choice = -1;
 
