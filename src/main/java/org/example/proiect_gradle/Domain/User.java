@@ -8,6 +8,7 @@ public class User extends Account implements Identifiable {
     private double score;
     protected List<Integer> favourites;
     public int nrOfFlaggedActions;
+    private String profileImagePath;
 
     public User(String userName, String password, String email, String phone, double score){
         this.userName=userName;
@@ -17,6 +18,7 @@ public class User extends Account implements Identifiable {
         this.score=score;
         this.favourites=new ArrayList<>();
         this.nrOfFlaggedActions=0;
+        this.profileImagePath="User.png";
     }
 
     @Override
@@ -52,6 +54,15 @@ public class User extends Account implements Identifiable {
     public void setFavourites(List<Integer> favourites) {
         this.favourites = favourites;
     }
+
+    public String getProfileImagePath() {
+        return profileImagePath;
+    }
+
+    public void setProfileImagePath(String imagePath) {
+        this.profileImagePath = profileImagePath;
+    }
+
 
     @Override
     public String toString() {

@@ -9,13 +9,20 @@ import org.example.proiect_gradle.Service.AdminService;
 import org.example.proiect_gradle.Service.UserService;
 import org.example.proiect_gradle.Service.VisitorService;
 
+import javax.swing.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
+
 
 public class ConsoleApp {
     private Controller controller;
     private final Scanner scanner = new Scanner(System.in);
+    private final DisplayGUI displayGUI;
 
-    public ConsoleApp() {}
+    public ConsoleApp() {
+        this.displayGUI=new DisplayGUI();
+    }
 
     public void selectRepositoryType() {
         System.out.println("Select repository type: ");
@@ -103,7 +110,11 @@ public class ConsoleApp {
                 case 2 -> signUp();
                 case 3 -> browseProductsVisitor();
                 case 4 -> browseUsersVisitor();
-                case 0 -> running = false;
+                case 0 -> {
+                    System.out.println("Bye Bye!");
+                    running = false;
+                    displayGUI.closeGUI();
+                }
             }
         }
     }
@@ -111,114 +122,114 @@ public class ConsoleApp {
     //VISITOR
 
     private void signUp() {
-        String username, email, password, phoneNumber;
+        JTextField usernameField = new JTextField();
+        JTextField emailField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
+        JTextField phoneNumberField = new JTextField();
 
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
+        contentPanel.add(new JLabel("Username:"));
+        contentPanel.add(usernameField);
+        contentPanel.add(Box.createVerticalStrut(10));
+        contentPanel.add(new JLabel("Email:"));
+        contentPanel.add(emailField);
+        contentPanel.add(Box.createVerticalStrut(10));
+        contentPanel.add(new JLabel("Password:"));
+        contentPanel.add(passwordField);
+        contentPanel.add(Box.createVerticalStrut(10));
+        contentPanel.add(new JLabel("Phone Number:"));
+        contentPanel.add(phoneNumberField);
 
-        while (true) {
+        JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.setPreferredSize(new Dimension(500, 300));
+
+        int result = JOptionPane.showConfirmDialog(
+                DisplayGUI.frame, scrollPane, "Sign Up", JOptionPane.OK_CANCEL_OPTION);
+
+        if (result == JOptionPane.OK_OPTION) {
+            String username = usernameField.getText();
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
+            String phoneNumber = phoneNumberField.getText();
+
             try {
-                System.out.println("Please enter your username: ");
-                username = scanner.nextLine();
-                if (username.isEmpty() || !username.matches("[a-zA-Z0-9_]+")) {
-                    throw new ValidationException("Invalid username: Username must be a non-empty string and contain only letters, numbers, or underscores. ");
+                if (!username.matches("[a-zA-Z0-9_]+")) {
+                    throw new ValidationException("Invalid username.");
                 }
-                break;
-            } catch (ValidationException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-
-        while (true) {
-            try {
-                System.out.println("Please enter your email address: ");
-                email = scanner.nextLine();
-                if (email.isEmpty() || !email.matches("^[^@\\s]+@[^@\\s]+$")) {
-                    throw new ValidationException("Invalid email: Email must be a non-empty string and contain no spaces. ");
+                if (!email.matches("^[^@\\s]+@[^@\\s]+$")) {
+                    throw new ValidationException("Invalid email.");
                 }
-                break;
-            } catch (ValidationException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-
-        while (true) {
-            try {
-                System.out.println("Please enter your password: ");
-                password = scanner.nextLine();
-                if (password.isEmpty() || !password.matches("^(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$")) {
-                    throw new ValidationException("Invalid password: Password must be a non-empty string and must be at least 8 characters long, contain at least one uppercase letter and one digit. ");
+                if (!password.matches("^(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$")) {
+                    throw new ValidationException("Invalid password.");
                 }
-                break;
-            } catch (ValidationException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-
-        while (true) {
-            try {
-                System.out.println("Please enter your phone number: ");
-                phoneNumber = scanner.nextLine();
-                if (phoneNumber.isEmpty() || !phoneNumber.matches("\\d{10}")) {
-                    throw new ValidationException("Invalid phone number: Phone number must consist of exactly 10 digits. ");
+                if (!phoneNumber.matches("\\d{10}")) {
+                    throw new ValidationException("Invalid phone number.");
                 }
-                break;
+
+                boolean success = controller.createAccount(username, password, email, phoneNumber);
+                if (success) {
+                    JOptionPane.showMessageDialog(DisplayGUI.frame,
+                            "Account created successfully! Please log in to continue.",
+                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(DisplayGUI.frame,
+                            "Something went wrong. Please try again.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
             } catch (ValidationException e) {
-                System.out.println(e.getMessage());
+                JOptionPane.showMessageDialog(DisplayGUI.frame,
+                        e.getMessage(),
+                        "Invalid Input",
+                        JOptionPane.WARNING_MESSAGE);
             }
-        }
-
-
-        boolean success = controller.createAccount(username, password, email, phoneNumber);
-        if (success) {
-            System.out.println("Account created successfully! Please log in to continue. ");
-        } else {
-            System.out.println("Something went wrong. Please try again. ");
         }
     }
 
-
     private void logIn() {
-        String username, password;
+        JTextField usernameField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
 
 
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
-        while (true) {
+
+        contentPanel.add(new JLabel("Username:"));
+        contentPanel.add(usernameField);
+        contentPanel.add(Box.createVerticalStrut(10));
+        contentPanel.add(new JLabel("Password:"));
+        contentPanel.add(passwordField);
+        contentPanel.add(Box.createVerticalStrut(20));
+
+        JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.setPreferredSize(new Dimension(500, 250)); // Wider size for dialog
+        scrollPane.setMaximumSize(new Dimension(500, 250));
+
+        int result = JOptionPane.showConfirmDialog(
+                DisplayGUI.frame, contentPanel, "Log In", JOptionPane.OK_CANCEL_OPTION);
+
+        if (result == JOptionPane.OK_OPTION) {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+
             try {
-                System.out.println("Please enter your username: ");
-                username = scanner.nextLine();
-                if (username.isEmpty()) {
-                    throw new ValidationException("Username cannot be empty");
-                }
+                int loginResult = controller.logIn(username, password);
 
-                System.out.println("Please enter your password: ");
-                password = scanner.nextLine();
-                if (password.isEmpty()) {
-                    throw new ValidationException("Password cannot be empty");
-                }
-
-
-                int result = controller.logIn(username, password);
-
-
-                if (result == 1) {
+                if (loginResult == 1) {
                     userMenu(username, password);
-                    break;
-                } else if (result == 2) {
+                } else if (loginResult == 2) {
                     adminMenu(username, password);
-                    break;
                 } else {
-
                     throw new ValidationException("Invalid username or password. Please try again.");
                 }
 
             } catch (ValidationException e) {
-                System.out.println(e.getMessage());
+                JOptionPane.showMessageDialog(DisplayGUI.frame, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
-
     }
 
     private void browseProductsVisitor() {
@@ -229,7 +240,7 @@ public class ConsoleApp {
             System.out.println("Product Browsing Options: ");
             System.out.println("1. Sort Products");
             System.out.println("2. Filter Products");
-            System.out.println("0. Go Back to Main Menu");
+            System.out.println("0. Go Back to Repo.Main Menu");
             System.out.print("Choose an option: ");
 
             int choice;
@@ -253,7 +264,10 @@ public class ConsoleApp {
             switch (choice) {
                 case 1 -> sortProducts();
                 case 2 -> filterProducts();
-                case 0 -> browsing = false;
+                case 0 -> {
+                    browsing = false;
+                    displayGUI.refreshWelcomePage();
+                }
             }
         }
     }
@@ -292,7 +306,10 @@ public class ConsoleApp {
                 case 1 -> displayedUsers = sortUsers();
                 case 2 -> displayedUsers = filterUsers();
                 case 3 -> viewUserReviews(displayedUsers);
-                case 0 -> browsing = false;
+                case 0 -> {
+                    browsing = false;
+
+                }
             }
         }
     }

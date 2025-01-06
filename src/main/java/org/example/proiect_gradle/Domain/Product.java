@@ -16,6 +16,9 @@ public class Product implements Identifiable{
     private int nrLikes;
     private int listedBy;
     private boolean available = true;
+    private String imagePath;
+
+
 
     public Product(String name,String color, int size, double price, String brand, String condition, int nrViews, int nrLikes, int listedBy) {
         this.name=name;
@@ -27,6 +30,7 @@ public class Product implements Identifiable{
         this.nrViews = nrViews;
         this.listedBy = listedBy;
         this.nrLikes = nrLikes;
+        this.imagePath="product.png";
     }
 
     public int getListedBy() {
@@ -158,6 +162,14 @@ public class Product implements Identifiable{
     @Override
     public int hashCode() {
         return Objects.hash(name, color, size, price, brand, condition, nrViews, nrLikes, listedBy, available);
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 }
 
