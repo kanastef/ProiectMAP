@@ -768,6 +768,7 @@ public class ConsoleApp {
                 System.out.println("3. Size");
                 System.out.println("4. Views");
                 System.out.println("5. All products");
+                System.out.println("0. Go Back");
                 System.out.print("Choose an option: ");
 
                 String choiceInput = scanner.nextLine();
@@ -775,17 +776,20 @@ public class ConsoleApp {
                     throw new ValidationException("Invalid input: Please enter a valid number between 1 and 5.");
                 }
                 choice = Integer.parseInt(choiceInput);
-                if (choice < 1 || choice > 5) {
-                    throw new ValidationException("Invalid choice: Please enter a number between 1 and 5.");
+                if (choice < 0 || choice > 5) {
+                    throw new ValidationException("Invalid choice: Please enter a number between 0 and 5.");
                 }
                 break;
             } catch (ValidationException e) {
                 System.out.println(e.getMessage());
             }
         }
-
-
-        while (true) {
+        boolean browsing = true;
+        List<Product> sortedProducts = new ArrayList<>();
+        if (choice == 0) {
+            browsing = false;
+        }
+        while (browsing) {
             try {
                 System.out.println("Sort in:");
                 System.out.println("1. Ascending");
@@ -800,15 +804,13 @@ public class ConsoleApp {
                 if (order < 1 || order > 2) {
                     throw new ValidationException("Invalid order: Please enter 1 for Ascending or 2 for Descending.");
                 }
-                break;
+                sortedProducts = controller.sortProducts(choice, order);
+                sortedProducts.forEach(System.out::println);
+                return sortedProducts;
             } catch (ValidationException e) {
                 System.out.println(e.getMessage());
             }
         }
-
-
-        List<Product> sortedProducts = controller.sortProducts(choice, order);
-        sortedProducts.forEach(System.out::println);
         return sortedProducts;
     }
 
@@ -823,6 +825,7 @@ public class ConsoleApp {
         System.out.println("7. Price");
         System.out.println("8. Size");
         System.out.println("9. Views");
+        System.out.println("0. Go Back");
         System.out.println("Choose an option: ");
 
         int choice;
@@ -833,8 +836,8 @@ public class ConsoleApp {
                     throw new ValidationException("Please enter a valid number.");
                 }
                 choice = Integer.parseInt(input);
-                if (choice < 1 || choice > 9) {
-                    throw new ValidationException("Please enter a number between 1 and 9.");
+                if (choice < 0 || choice > 9) {
+                    throw new ValidationException("Please enter a number between 0 and 9.");
                 }
                 break;
             } catch (ValidationException e) {
@@ -848,6 +851,9 @@ public class ConsoleApp {
 
         try {
             switch (choice) {
+                case 0 -> {
+                    break;
+                }
                 case 1 -> {
                     List<Category> categories = controller.getCategories();
                     categories.forEach(System.out::println);

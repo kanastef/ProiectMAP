@@ -51,7 +51,7 @@ public class DBUserRepository extends DBRepository<User> {
     public PreparedStatement getInsertStatement(Connection c, User item) throws DatabaseException {
         try {
             PreparedStatement stmt = c.prepareStatement(
-                    "INSERT INTO Users(userName, password, email, phone, score, nrOfFlaggedActions) VALUES(?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO Users(userName, password, email, phone, score, nrOfFlaggedActions, profileImagePath) VALUES(?, ?, ?, ?, ?, ?, ?)",
                     PreparedStatement.RETURN_GENERATED_KEYS
             );
             stmt.setString(1, item.getUserName());
@@ -60,6 +60,7 @@ public class DBUserRepository extends DBRepository<User> {
             stmt.setString(4, item.getPhone());
             stmt.setDouble(5, item.getScore());
             stmt.setInt(6, item.nrOfFlaggedActions);
+            stmt.setString(7, item.getProfileImagePath());
             item.setId(currentId);
             currentId++;
             return stmt;
@@ -82,7 +83,7 @@ public class DBUserRepository extends DBRepository<User> {
     public PreparedStatement getUpdateStatement(Connection c, User item) throws DatabaseException {
         try {
             PreparedStatement stmt = c.prepareStatement(
-                    "UPDATE Users SET userName = ?, password = ?, email = ?, phone = ?, score = ?, nrOfFlaggedActions = ? WHERE id = ?"
+                    "UPDATE Users SET userName = ?, password = ?, email = ?, phone = ?, score = ?, nrOfFlaggedActions = ?, profileImagePath = ? WHERE id = ?"
             );
             stmt.setString(1, item.getUserName());
             stmt.setString(2, item.getPassword());
@@ -90,7 +91,8 @@ public class DBUserRepository extends DBRepository<User> {
             stmt.setString(4, item.getPhone());
             stmt.setDouble(5, item.getScore());
             stmt.setInt(6, item.nrOfFlaggedActions);
-            stmt.setInt(7, item.getId());
+            stmt.setString(7, item.getProfileImagePath());
+            stmt.setInt(8, item.getId());
             return stmt;
         }catch(SQLException e){
             throw new DatabaseException("Error preparing update statement for user with id: "+ item.getId());
@@ -155,6 +157,7 @@ public class DBUserRepository extends DBRepository<User> {
             user.setId(resultSet.getInt("id"));
             user.setNrOfFlaggedActions(resultSet.getInt("nrOfFlaggedActions"));
             user.setFavourites(getLikedProductsForUser(user.getId(), connection));
+            user.setProfileImagePath(resultSet.getString("profileImagePath"));
             return user;
         }catch(SQLException e){
             throw new DatabaseException("Error creating user entity from result set");

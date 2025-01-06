@@ -2,6 +2,9 @@ package org.example.proiect_gradle.Domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 public class User extends Account implements Identifiable {
     private int id;
