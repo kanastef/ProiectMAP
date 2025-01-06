@@ -13,6 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 
 public class ConsoleApp {
@@ -143,7 +144,7 @@ public class ConsoleApp {
         contentPanel.add(phoneNumberField);
 
         JScrollPane scrollPane = new JScrollPane(contentPanel);
-        scrollPane.setPreferredSize(new Dimension(500, 300));
+        scrollPane.setPreferredSize(new Dimension(800, 700));
 
         int result = JOptionPane.showConfirmDialog(
                 DisplayGUI.frame, scrollPane, "Sign Up", JOptionPane.OK_CANCEL_OPTION);
@@ -205,8 +206,8 @@ public class ConsoleApp {
         contentPanel.add(Box.createVerticalStrut(20));
 
         JScrollPane scrollPane = new JScrollPane(contentPanel);
-        scrollPane.setPreferredSize(new Dimension(500, 250)); // Wider size for dialog
-        scrollPane.setMaximumSize(new Dimension(500, 250));
+        scrollPane.setPreferredSize(new Dimension(800, 700)); // Wider size for dialog
+        scrollPane.setMaximumSize(new Dimension(800, 700));
 
         int result = JOptionPane.showConfirmDialog(
                 DisplayGUI.frame, contentPanel, "Log In", JOptionPane.OK_CANCEL_OPTION);
@@ -276,40 +277,64 @@ public class ConsoleApp {
         boolean browsing = true;
         List<User> displayedUsers = new ArrayList<>();
 
+        displayGUI.setUserActionListener(new DisplayGUI.UserActionListener() {
+            @Override
+            public void onViewReviews(int userId) {
+
+                viewUserReviews(userId);
+            }
+
+            @Override
+            public void onViewListings(int userId) {
+                System.out.println("Viewing user listings is disabled for visitors.");
+            }
+
+            @Override
+            public void onLeaveReview(int userId) {
+                System.out.println("Leaving a review is disabled for visitors.");
+            }
+        });
+
         while (browsing) {
             System.out.println("User Browsing Options: ");
             System.out.println("1. Sort Users");
             System.out.println("2. Filter Users");
-            System.out.println("3. View User Reviews");
+            System.out.println("3.Select User via GUI for actions");
             System.out.println("0. Go Back to Main Menu");
             System.out.print("Choose an option: ");
 
-            int choice;
-            while (true) {
-                try {
-                    String input = scanner.nextLine();
-                    if (!input.matches("\\d+")) {
-                        throw new ValidationException("Input must be a number.");
-                    }
-                    choice = Integer.parseInt(input);
-                    if (choice < 0 || choice > 3) {
-                        throw new ValidationException("Please enter a number between 0 and 3.");
-                    }
-                    break;
-                } catch (ValidationException e) {
-                    System.out.println("Invalid input: " + e.getMessage());
-                    System.out.print("Please choose a valid option: ");
+            try {
+                if (!scanner.hasNextInt()) {
+                    throw new ValidationException("Invalid input. Please enter a valid number.");
                 }
-            }
+                int choice = scanner.nextInt();
+                scanner.nextLine();
 
-            switch (choice) {
-                case 1 -> displayedUsers = sortUsers();
-                case 2 -> displayedUsers = filterUsers();
-                case 3 -> viewUserReviews(displayedUsers);
-                case 0 -> {
-                    browsing = false;
-
+                switch (choice) {
+                    case 1 -> {
+                        displayedUsers = sortUsers();
+                        displayGUI.updateUsers(displayedUsers);
+                        System.out.println("Sorted users displayed in GUI.");
+                    }
+                    case 2 -> {
+                        displayedUsers = filterUsers();
+                        displayGUI.updateUsers(displayedUsers);
+                        System.out.println("Filtered users displayed in GUI.");
+                    }
+                    case 3 -> {
+                        if (displayedUsers.isEmpty()) {
+                            System.out.println("Please sort or filter users first.");
+                        } else {
+                            displayGUI.updateUsers(displayedUsers);
+                            System.out.println("Please select a user from the GUI to proceed.");
+                        }
+                    }
+                    case 0 -> browsing = false;
+                    default -> System.out.println("Invalid choice. Please try again.");
                 }
+            } catch (ValidationException e) {
+                System.out.println("Error: " + e.getMessage());
+                scanner.nextLine();
             }
         }
     }
@@ -317,7 +342,9 @@ public class ConsoleApp {
 
     //USER
     private void userMenu(String username, String password) {
+
         boolean loggedIn = true;
+
         while (loggedIn) {
             System.out.println("Welcome to your profile!");
             System.out.println("1. Browse Products");
@@ -360,75 +387,76 @@ public class ConsoleApp {
                 case 7 -> viewSentOffers(username, password);
                 case 8 -> viewMyReviews(username, password);
                 case 9 -> viewLikes(username, password);
-                case 0 -> loggedIn = false;
+                case 0 ->{
+                    loggedIn = false;
+                    displayGUI.refreshWelcomePage();
+                }
             }
         }
     }
 
     private void viewLikes(String username, String password) {
         List<Product> liked = controller.displayLikedProducts(username, password);
-        for (Product product : liked) {
-            System.out.println(product);
-        }
-        System.out.println("Would you like to remove a product from your likes?");
-        System.out.println("1. Yes");
-        System.out.println("2. No");
 
-        int choice;
-        while (true) {
-            try {
-                String input = scanner.nextLine();
-                if (!input.matches("\\d+")) {
-                    throw new ValidationException("Input must be a number.");
-                }
-                choice = Integer.parseInt(input);
-                if (choice < 1 || choice > 2) {
-                    throw new ValidationException("Please enter a number between 1 and 2.");
-                }
-                break;
-            } catch (ValidationException e) {
-                System.out.println("Invalid input: " + e.getMessage());
-                System.out.print("Please select a valid option: ");
-            }
-        }
+        JPanel productsPanel = new JPanel();
+        productsPanel.setLayout(new BoxLayout(productsPanel, BoxLayout.Y_AXIS));
 
-        switch (choice) {
-            case 1 -> removeLike(liked, username, password);
-            case 2 -> System.out.println(controller.userService.findByCriteriaHelper(username, password).getFavourites());
-        }
-    }
-
-
-    private void removeLike(List<Product> likedProducts, String username, String password) {
-        System.out.println("Enter the ID of the product you would like to delete: ");
-
-        int id;
-        while (true) {
-            try {
-                String input = scanner.nextLine();
-                if (!input.matches("\\d+")) {
-                    throw new ValidationException("Input must be a number.");
-                }
-                id = Integer.parseInt(input);
-                int finalId = id;
-                if (likedProducts.stream().map(Product::getId).noneMatch(x -> x.equals(finalId))) {
-                    throw new ValidationException("Invalid ID: No such product found in your likes.");
-                }
-                break;
-            } catch (ValidationException e) {
-                System.out.println("Invalid input: " + e.getMessage());
-                System.out.print("Please enter a valid ID: ");
-            }
-        }
-
-        boolean success = controller.removeFromLiked(username, password, id);
-        if (success) {
-            System.out.println("Product deleted successfully!");
+        if (liked == null || liked.isEmpty()) {
+            JPanel noLikedPanel = new JPanel();
+            noLikedPanel.add(new JLabel("You have no liked products."));
+            productsPanel.add(noLikedPanel);
         } else {
-            System.out.println("Something went wrong.");
-        }
-    }
+            for (Product product : liked) {
+                JPanel productPanel = new JPanel();
+                productPanel.setLayout(new BorderLayout());
 
+                JLabel imageLabel;
+                if (product.getImagePath() != null) {
+                    ImageIcon icon = new ImageIcon(product.getImagePath());
+                    Image img = icon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+                    imageLabel = new JLabel(new ImageIcon(img));
+                } else {
+                    imageLabel = new JLabel("No Image");
+                }
+                productPanel.add(imageLabel, BorderLayout.WEST);
+
+                JTextArea details = new JTextArea(product.toString());
+                details.setEditable(false);
+                details.setMargin(new Insets(10, 10, 10, 10));
+                productPanel.add(details, BorderLayout.CENTER);
+
+                JButton removeButton = new JButton("Remove Like");
+                removeButton.addActionListener(e -> {
+                    int confirmation = JOptionPane.showConfirmDialog(DisplayGUI.frame,
+                            "Are you sure you want to remove this product from your likes?",
+                            "Confirm Removal",
+                            JOptionPane.YES_NO_OPTION);
+
+                    if (confirmation == JOptionPane.YES_OPTION) {
+                        boolean success = controller.removeFromLiked(username, password, product.getId());
+                        if (success) {
+                            JOptionPane.showMessageDialog(DisplayGUI.frame,
+                                    "Product removed successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            productsPanel.remove(productPanel);
+                            productsPanel.revalidate();
+                            productsPanel.repaint();
+                        } else {
+                            JOptionPane.showMessageDialog(DisplayGUI.frame,
+                                    "Failed to remove product.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                });
+                productPanel.add(removeButton, BorderLayout.EAST);
+
+                productsPanel.add(productPanel);
+            }
+        }
+
+        JScrollPane scrollPane = new JScrollPane(productsPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+        JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Liked Products", JOptionPane.PLAIN_MESSAGE);
+    }
 
 
 
@@ -462,89 +490,85 @@ public class ConsoleApp {
     }
 
     private void reviewsByMe(String username, String password) {
-        List<Review> reviews = controller.displayReviewsLeftByUser(username, password);
+        List<Review> reviews = controller.displayReviewsLeftByUser (username, password);
+
+        JPanel reviewsPanel = new JPanel();
+        reviewsPanel.setLayout(new BoxLayout(reviewsPanel, BoxLayout.Y_AXIS));
+
         if (reviews.isEmpty()) {
-            System.out.println("No reviews found. Please try again.");
-        }
-        else {
-            for (Review review : reviews) {
-                System.out.println(review);
-            }
-            System.out.println("Would you like to delete any of the reviews you have made?");
-            System.out.println("1. Yes");
-            System.out.println("2. No");
-
-            int choice;
-            while (true) {
-                try {
-                    String input = scanner.nextLine();
-                    if (!input.matches("\\d+")) {
-                        throw new ValidationException("Input must be a number.");
-                    }
-                    choice = Integer.parseInt(input);
-                    if (choice < 1 || choice > 2) {
-                        throw new ValidationException("Please enter a number between 1 and 2.");
-                    }
-                    break;
-                } catch (ValidationException e) {
-                    System.out.println("Invalid input: " + e.getMessage());
-                    System.out.print("Please enter a valid option: ");
-                }
-            }
-
-            switch (choice) {
-                case 1 -> deleteMyReview(username, password, reviews);
-                case 2 -> {return;
-                }
-            }
-        }
-    }
-
-    private void deleteMyReview(String username, String password, List<Review> reviews) {
-        System.out.println("Enter the ID of the review you would like to delete: ");
-
-        int id;
-        while (true) {
-            try {
-                String input = scanner.nextLine();
-                if (!input.matches("\\d+")) {
-                    throw new ValidationException("Input must be a valid number.");
-                }
-                id = Integer.parseInt(input);
-                int finalId = id;
-                if (reviews.stream().map(Review::getId).noneMatch(x -> x.equals(finalId))) {
-                    throw new ValidationException("Invalid review ID.");
-                }
-                break;
-            } catch (ValidationException e) {
-                System.out.println("Invalid input: " + e.getMessage());
-                System.out.print("Please enter a valid review ID: ");
-            }
-        }
-
-        boolean success = controller.deleteReview(username, password, id);
-        if (success) {
-            System.out.println("Review deleted successfully!");
+            reviewsPanel.add(new JLabel("No reviews found. Please try again."));
         } else {
-            System.out.println("Something went wrong.");
+            for (Review review : reviews) {
+                JPanel reviewPanel = new JPanel();
+                reviewPanel.setLayout(new BorderLayout());
+
+                JTextArea reviewTextArea = new JTextArea(review.toString());
+                reviewTextArea.setEditable(false);
+                reviewTextArea.setMargin(new Insets(10, 10, 10, 10));
+                reviewPanel.add(reviewTextArea, BorderLayout.CENTER);
+
+                JButton deleteButton = new JButton("Delete Review");
+                deleteButton.addActionListener(e -> {
+                    int confirmation = JOptionPane.showConfirmDialog(DisplayGUI.frame,
+                            "Are you sure you want to delete this review?",
+                            "Confirm Deletion",
+                            JOptionPane.YES_NO_OPTION);
+
+                    if (confirmation == JOptionPane.YES_OPTION) {
+                        boolean success = controller.deleteReview(username, password, review.getId());
+                        if (success) {
+                            JOptionPane.showMessageDialog(DisplayGUI.frame,
+                                    "Review deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            reviewsPanel.remove(reviewPanel);
+                            reviewsPanel.revalidate();
+                            reviewsPanel.repaint();
+                        } else {
+                            JOptionPane.showMessageDialog(DisplayGUI.frame,
+                                    "Failed to delete review.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                });
+                reviewPanel.add(deleteButton, BorderLayout.EAST);
+
+                reviewsPanel.add(reviewPanel);
+            }
         }
+
+        JScrollPane scrollPane = new JScrollPane(reviewsPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+        JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Your Reviews", JOptionPane.PLAIN_MESSAGE);
     }
 
     private void reviewsForMe(String username, String password) {
-        System.out.println("Your rating is: ");
         double rating = controller.getProfileScore(username, password);
-        System.out.println(rating);
-        scanner.nextLine();
+
+        JPanel reviewsPanel = new JPanel();
+        reviewsPanel.setLayout(new BoxLayout(reviewsPanel, BoxLayout.Y_AXIS));
+
+        reviewsPanel.add(new JLabel("Your rating is: " + rating));
+
         List<Review> reviews = controller.displayReviewsForMe(username, password);
         if (reviews.isEmpty()) {
-            System.out.println("No reviews found. Please try again.");
-        }
-        else {
+            reviewsPanel.add(new JLabel("No reviews found. Please try again."));
+        } else {
             for (Review review : reviews) {
-                System.out.println(review);
+                JTextArea reviewTextArea = new JTextArea(review.toString());
+                reviewTextArea.setEditable(false);
+                reviewTextArea.setMargin(new Insets(10, 10, 10, 10));
+                reviewTextArea.setLineWrap(true);
+                reviewTextArea.setWrapStyleWord(true);
+                reviewsPanel.add(reviewTextArea);
             }
         }
+
+        JScrollPane scrollPane = new JScrollPane(reviewsPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+        JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Your Reviews", JOptionPane.PLAIN_MESSAGE);
     }
+
+
 
     private void viewSentOffers(String username, String password) {
         List<Offer> madeOffers = controller.getMadeOffers(username, password);
@@ -560,114 +584,141 @@ public class ConsoleApp {
 
     private void viewOffers(String username, String password) {
         List<Offer> offers = controller.displayReceivedOffers(username, password);
+
         if (offers.isEmpty()) {
-            System.out.println("You have no offers.");
+            JOptionPane.showMessageDialog(DisplayGUI.frame, "You have no offers.", "No Offers", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        boolean managingOffers = true;
-        while (managingOffers) {
-            System.out.println("Your Offers:");
-            for (int i = 0; i < offers.size(); i++) {
-                System.out.println((i + 1) + ". " + offers.get(i));
-            }
-            System.out.println("0. Go Back");
 
-            int choice;
-            while (true) {
-                try {
-                    System.out.print("Select an offer ID to accept/decline or go back: ");
-                    String input = scanner.nextLine();
-                    if (!input.matches("\\d+")) {
-                        throw new ValidationException("Input must be a valid number.");
-                    }
-                    choice = Integer.parseInt(input);
-                    int finalChoice = choice;
-                    if (choice == 0 || offers.stream().map(Offer::getId).anyMatch(x -> x.equals(finalChoice))) {
-                        break;
-                    } else {
-                        throw new ValidationException("Invalid offer ID. Please try again.");
-                    }
-                } catch (ValidationException e) {
-                    System.out.println("Invalid input: " + e.getMessage());
-                }
-            }
+        JPanel offersPanel = new JPanel();
+        offersPanel.setLayout(new BoxLayout(offersPanel, BoxLayout.Y_AXIS));
 
-            if (choice == 0) {
-                managingOffers = false;
-            } else {
-                int finalChoice1 = choice;
-                Offer selectedOffer = offers.stream()
-                        .filter(offer -> offer.getId() == finalChoice1)
-                        .findFirst()
-                        .orElse(null);
-                if (selectedOffer != null) {
-                    System.out.println("You selected offer: " + selectedOffer);
-                    int action;
-                    while (true) {
-                        try {
-                            System.out.println("1. Accept Offer");
-                            System.out.println("2. Decline Offer");
-                            System.out.print("Choose an option: ");
-                            String actionInput = scanner.nextLine();
-                            if (!actionInput.matches("\\d+")) {
-                                throw new ValidationException("Input must be a valid number.");
-                            }
-                            action = Integer.parseInt(actionInput);
-                            if (action == 1 || action == 2) {
-                                break;
-                            } else {
-                                throw new ValidationException("Invalid action. Please select 1 or 2.");
-                            }
-                        } catch (ValidationException e) {
-                            System.out.println("Invalid input: " + e.getMessage());
-                        }
-                    }
-                    switch (action) {
-                        case 1 -> acceptOffer(username, password, selectedOffer);
-                        case 2 -> declineOffer(username, password, selectedOffer);
-                    }
+        for (Offer offer : offers) {
+            JPanel offerPanel = new JPanel();
+            offerPanel.setLayout(new BorderLayout());
+
+            JTextArea offerTextArea = new JTextArea(offer.toString());
+            offerTextArea.setEditable(false);
+            offerTextArea.setMargin(new Insets(10, 10, 10, 10));
+            offerTextArea.setLineWrap(true);
+            offerTextArea.setWrapStyleWord(true);
+            offerPanel.add(offerTextArea, BorderLayout.CENTER);
+
+            JButton acceptButton = new JButton("Accept Offer");
+            acceptButton.addActionListener(e -> {
+                int confirmation = JOptionPane.showConfirmDialog(DisplayGUI.frame,
+                        "Are you sure you want to accept this offer?",
+                        "Confirm Acceptance",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (confirmation == JOptionPane.YES_OPTION) {
+                    acceptOffer(username, password, offer);
+                    JOptionPane.showMessageDialog(DisplayGUI.frame, "Offer accepted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    offersPanel.remove(offerPanel);
+                    offersPanel.revalidate();
+                    offersPanel.repaint();
                 }
-            }
+            });
+
+            JButton declineButton = new JButton("Decline Offer");
+            declineButton.addActionListener(e -> {
+                int confirmation = JOptionPane.showConfirmDialog(DisplayGUI.frame,
+                        "Are you sure you want to decline this offer?",
+                        "Confirm Decline",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (confirmation == JOptionPane.YES_OPTION) {
+                    declineOffer(username, password, offer);
+                    JOptionPane.showMessageDialog(DisplayGUI.frame, "Offer declined successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    offersPanel.remove(offerPanel);
+                    offersPanel.revalidate();
+                    offersPanel.repaint();
+                }
+            });
+
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.add(acceptButton);
+            buttonPanel.add(declineButton);
+            offerPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+            offersPanel.add(offerPanel);
         }
+
+        JScrollPane scrollPane = new JScrollPane(offersPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+        JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Your Offers", JOptionPane.PLAIN_MESSAGE);
     }
 
     private void sendOffer(String username, String password, int selectedProduct) {
-        double offerAmount;
-        String message;
+        JTextField offerAmountField = new JTextField();
+        JTextField offerMessageField = new JTextField();
 
-        while(true) {
-            try {
-                System.out.print("Enter your offer amount: ");
-                offerAmount = scanner.nextDouble();
-                if(offerAmount==0.00){
-                    throw new ValidationException("Invalid offered amount: the offered amount can't be 0.00 or smaller then half of the selected product's price");
-                }break;
-            }catch(ValidationException e){
-                System.out.print("Invalid input: Please enter a valid price."+e.getMessage());
-            }
-        }
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
-        while(true) {
+        contentPanel.add(new JLabel("Enter Offer Amount:"));
+        contentPanel.add(offerAmountField);
+        contentPanel.add(Box.createVerticalStrut(10)); // Add spacing
+        contentPanel.add(new JLabel("Enter Offer Message:"));
+        contentPanel.add(offerMessageField);
+
+        JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+        int result = JOptionPane.showConfirmDialog(
+                DisplayGUI.frame, scrollPane, "Send Offer", JOptionPane.OK_CANCEL_OPTION);
+
+        if (result == JOptionPane.OK_OPTION) {
+            double offerAmount;
+            String offerMessage = offerMessageField.getText();
+
             try {
-                System.out.print("Enter your offer message: ");
-                message = scanner.nextLine();
-                if(message.isEmpty()){
-                    throw new ValidationException("Invalid message: The offers message cannot be an empty string");
+                offerAmount = Double.parseDouble(offerAmountField.getText().trim());
+
+                if (offerAmount <= 0.00) {
+                    throw new ValidationException("The offered amount cannot be 0.00 or smaller than half the selected product's price.");
                 }
-                break;
-            }catch(ValidationException e){
-                System.out.print("Invalid input: Please enter a valid price."+e.getMessage());
-
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(DisplayGUI.frame,
+                        "Please enter a valid numeric value for the offer amount.",
+                        "Invalid Input",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            } catch (ValidationException e) {
+                JOptionPane.showMessageDialog(DisplayGUI.frame,
+                        e.getMessage(),
+                        "Invalid Input",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
             }
 
-        }
-        boolean success = controller.sendOffer(username, password, message, selectedProduct, offerAmount);
-        if (success) {
-            System.out.println("Offer sent successfully!");
-        } else {
-            System.out.println("Could not send offer. Please try again.");
+            if (offerMessage.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(DisplayGUI.frame,
+                        "The offer message cannot be empty.",
+                        "Invalid Input",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            boolean success = controller.sendOffer(username, password, offerMessage, selectedProduct, offerAmount);
+
+            if (success) {
+                JOptionPane.showMessageDialog(DisplayGUI.frame,
+                        "Offer sent successfully!",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                System.out.println("Offer for selected product was successfully sent.");
+            } else {
+                JOptionPane.showMessageDialog(DisplayGUI.frame,
+                        "Could not send offer. Please try again.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
+
 
     private void declineOffer(String username, String password,Offer selectedOffer) {
         boolean success = controller.declineOffer(username, password, selectedOffer.getId());
@@ -691,41 +742,91 @@ public class ConsoleApp {
 
     private void viewReceivedOrders(String username, String password) {
         List<Order> orders = controller.getReceivedOrders(username, password);
+
+        JPanel ordersPanel = new JPanel();
+        ordersPanel.setLayout(new BoxLayout(ordersPanel, BoxLayout.Y_AXIS));
+
         if (orders.isEmpty()) {
-            System.out.println("You have no orders.");
-            return;
+            ordersPanel.add(new JLabel("You have no orders."));
+        } else {
+            for (Order order : orders) {
+                JTextArea orderTextArea = new JTextArea(order.toString());
+                orderTextArea.setEditable(false);
+                orderTextArea.setMargin(new Insets(10, 10, 10, 10));
+                orderTextArea.setLineWrap(true);
+                orderTextArea.setWrapStyleWord(true);
+                ordersPanel.add(orderTextArea);
+            }
         }
-        System.out.println("Your Orders:");
-        for (Order order : orders) {
-            System.out.println(order);
-        }
+
+        JScrollPane scrollPane = new JScrollPane(ordersPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+        JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Your Orders", JOptionPane.PLAIN_MESSAGE);
     }
+
 
     private void viewMyOrders(String username, String password) {
         List<Order> orders = controller.getMadeOrders(username, password);
+
+        JPanel ordersPanel = new JPanel();
+        ordersPanel.setLayout(new BoxLayout(ordersPanel, BoxLayout.Y_AXIS));
+
         if (orders.isEmpty()) {
-            System.out.println("You have no orders.");
-            return;
+            ordersPanel.add(new JLabel("You have no orders."));
+        } else {
+            for (Order order : orders) {
+                JTextArea orderTextArea = new JTextArea(order.toString());
+                orderTextArea.setEditable(false);
+                orderTextArea.setMargin(new Insets(10, 10, 10, 10));
+                orderTextArea.setLineWrap(true);
+                orderTextArea.setWrapStyleWord(true);
+                ordersPanel.add(orderTextArea);
+            }
         }
-        System.out.println("Your Orders:");
-        for (Order order : orders) {
-            System.out.println(order);
-        }
+
+        JScrollPane scrollPane = new JScrollPane(ordersPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+        JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Your Orders", JOptionPane.PLAIN_MESSAGE);
     }
+
 
     private void browseProductsUser(String username, String password) {
         boolean browsing = true;
         List<Product> products = new ArrayList<>();
 
+        displayGUI.setProductActionListener(product -> {
+            System.out.println("Product selected: " + product.getName());
+
+            String[] options = {"Like Product", "Send Offer"};
+            int actionChoice = JOptionPane.showOptionDialog(null,
+                    "Choose Action for Product:",
+                    "Product Action",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    options,
+                    options[0]);
+
+            if (actionChoice == 0) {
+                likeProducts(username, password, product);
+            } else if (actionChoice == 1) {
+                sendOffer(username, password, product.getId());
+            } else {
+                System.out.println("No action selected.");
+            }
+
+            System.out.println("Choose an option or select a product via GUI: ");
+        });
 
         while (browsing) {
             System.out.println("Product Browsing Options: ");
             System.out.println("1. Sort Products");
             System.out.println("2. Filter Products");
-            System.out.println("3. Select Product for Action (like, offer)");
-            System.out.println("4. Place an Order");
-            System.out.println("0. Go Back to Main Menu");
-            System.out.print("Choose an option: ");
+            System.out.println("3. Place an Order");
+            System.out.println("Select Product for Action (via GUI)");
+            System.out.println("0. Go Back to Repo.Main Menu");
+            System.out.print("Choose an option or select a product via GUI: ");
 
             int choice;
             while (true) {
@@ -735,8 +836,8 @@ public class ConsoleApp {
                         throw new ValidationException("Please enter a valid number.");
                     }
                     choice = Integer.parseInt(input);
-                    if (choice < 0 || choice > 4) {
-                        throw new ValidationException("Please enter a number between 0 and 4.");
+                    if (choice < 0 || choice > 3) {
+                        throw new ValidationException("Please enter a number between 0 and 3.");
                     }
                     break;
                 } catch (ValidationException e) {
@@ -748,17 +849,45 @@ public class ConsoleApp {
             switch (choice) {
                 case 1 -> products = sortProducts();
                 case 2 -> products = filterProducts();
-                case 3 -> selectProductAction(username, password, products);
-                case 4 -> makeOrder(username, password, products);
-                case 0 -> browsing = false;
+                case 3 -> {
+                    displayGUI.setProductActionListener(null);
+                    makeOrder(username, password, products);
+                    displayGUI.updateProducts(products);
+                    displayGUI.setProductActionListener(product -> {
+                        System.out.println("Product selected: " + product.getName());
+                        String[] options = {"Like Product", "Send Offer"};
+                        int actionChoice = JOptionPane.showOptionDialog(null,
+                                "Choose Action for Product:",
+                                "Product Action",
+                                JOptionPane.DEFAULT_OPTION,
+                                JOptionPane.INFORMATION_MESSAGE,
+                                null,
+                                options,
+                                options[0]);
+
+                        if (actionChoice == 0) {
+                            likeProducts(username, password, product);
+                        } else if (actionChoice == 1) {
+                            sendOffer(username, password, product.getId());
+                        } else {
+                            System.out.println("No action selected.");
+                        }
+                    });
+                }
+                case 0 -> {
+                    browsing = false;
+                    displayGUI.refreshWelcomePage();
+                }
+            }
+
+            if (!products.isEmpty()) {
+                displayGUI.updateProducts(products);
             }
         }
     }
 
     private List<Product> sortProducts() {
-        int choice,order;
-
-
+        int choice, order;
 
         while (true) {
             try {
@@ -784,7 +913,6 @@ public class ConsoleApp {
             }
         }
 
-
         while (true) {
             try {
                 System.out.println("Sort in:");
@@ -806,15 +934,16 @@ public class ConsoleApp {
             }
         }
 
-
         List<Product> sortedProducts = controller.sortProducts(choice, order);
-        sortedProducts.forEach(System.out::println);
+        displayGUI.updateProducts(sortedProducts);
+
         return sortedProducts;
     }
 
+
     private List<Product> filterProducts() {
         System.out.println("Filter Products by: ");
-        System.out.println("1. Category");
+        System.out.println("1. Domain.Category");
         System.out.println("2. Brand");
         System.out.println("3. Color");
         System.out.println("4. Seller");
@@ -973,63 +1102,6 @@ public class ConsoleApp {
         return filteredProducts;
     }
 
-    private void selectProductAction(String username, String password,List<Product> products) {
-        if (products.isEmpty()) {
-            System.out.println("No products to select. Please search or filter products first.");
-            return;
-        }
-        int productId;
-
-
-        while (true) {
-            System.out.print("Enter Product ID to select for action: ");
-            try {
-                productId = scanner.nextInt();
-                scanner.nextLine();
-                int finalProductId = productId;
-                Product selectedProduct = products.stream()
-                        .filter(product -> product.getId() == finalProductId)
-                        .findFirst()
-                        .orElse(null);
-
-                if (selectedProduct != null) {
-
-                    boolean validAction = false;
-                    while (!validAction) {
-                        System.out.println("Choose Action for Product:");
-                        System.out.println("1. Like Product");
-                        System.out.println("2. Send Offer");
-                        System.out.print("Enter your choice: ");
-                        try {
-                            int actionChoice = scanner.nextInt();
-                            scanner.nextLine();
-                            switch (actionChoice) {
-                                case 1 -> {
-                                    likeProducts(username, password, selectedProduct);
-                                    validAction = true;
-                                }
-                                case 2 -> {
-                                    sendOffer(username, password, selectedProduct.getId());
-                                    validAction = true;
-                                }
-                                default -> throw new ValidationException("Invalid action choice. Please try again.");
-                            }
-                        } catch (ValidationException e) {
-                            System.out.println("Error: " + e.getMessage());
-                            scanner.nextLine();
-                        }
-                    }
-                    break;
-                } else {
-                    throw new ValidationException("Invalid Product ID. Please try again.");
-                }
-            } catch (ValidationException e) {
-                System.out.println("Error: " + e.getMessage());
-                scanner.nextLine();
-            }
-        }
-    }
-
 
     private void likeProducts(String username, String password,Product selectedProduct) {
         boolean success = controller.likeProduct(username, password, selectedProduct.getId());
@@ -1042,343 +1114,353 @@ public class ConsoleApp {
 
     private void makeOrder(String username, String password, List<Product> products) {
         if (products.isEmpty()) {
-            System.out.println("No products to select. Please search or filter products first.");
+            System.out.println("No products available for ordering. Please search or filter products first.");
             return;
         }
 
         Map<Integer, List<Integer>> orderedProducts = new HashMap<>();
-        int option;
+        CountDownLatch latch = new CountDownLatch(1);
 
+        displayGUI.updateProductsWithOrderOptions(products, selectedProducts -> {
+            for (Product product : selectedProducts) {
+                if (product.isAvailable()) {
+                    orderedProducts
+                            .computeIfAbsent(product.getListedBy(), _ -> new ArrayList<>())
+                            .add(product.getId());
+                }
+            }
 
-        while (true) {
-            System.out.print("Enter Product IDs to add to your order. Press 0 to stop: ");
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.out.println("Thread interrupted: " + e.getMessage());
+            return;
+        }
+
+        if (orderedProducts.isEmpty()) {
+            System.out.println("No products were selected for ordering.");
+            return;
+        }
+
+        boolean validAddress = false;
+        String address = "";
+
+        while (!validAddress) {
             try {
-                if (!scanner.hasNextInt()) {
-                    throw new ValidationException("Invalid input. Please enter a valid product ID.");
+                System.out.println("Enter your address: ");
+                address = scanner.nextLine();
+
+                if (address.isEmpty() || !address.matches("[a-zA-Z0-9, ]+")) {
+                    throw new ValidationException("Invalid address: Address must be a non-empty string and contain only letters, numbers, commas, or spaces.");
                 }
-
-                option = scanner.nextInt();
-                scanner.nextLine();
-
-                if (option == 0) {
-                    break;
-                }
-
-                int finalOption = option;
-                boolean validProduct = products.stream().anyMatch(product -> product.getId() == finalOption);
-                if (!validProduct) {
-                    throw new ValidationException("Invalid Product ID. Please try again.");
-                }
-
-
-                for (Product product : products) {
-                    if (product.getId() == option && product.isAvailable()) {
-                        orderedProducts
-                                .computeIfAbsent(product.getListedBy(), _ -> new ArrayList<>())
-                                .add(option);
-                    }
-                }
+                validAddress = true;
             } catch (ValidationException e) {
                 System.out.println("Error: " + e.getMessage());
-                scanner.nextLine();
             }
         }
 
-
-        if (!orderedProducts.isEmpty()) {
-            boolean validAddress = false;
-            String address = "";
-
-
-            while (!validAddress) {
-                try {
-                    System.out.println("Enter your address: ");
-                    address = scanner.nextLine();
-
-                    if (address.isEmpty() || !address.matches("[a-zA-Z0-9, ]+")) {
-                        throw new ValidationException("Invalid address: Address must be a non-empty string and contain only letters, numbers, commas or spaces");
-                    }
-                    validAddress = true;
-                } catch (ValidationException e) {
-                    System.out.println("Error: " + e.getMessage());
-                }
-            }
-
-
-            for (int sellerId : orderedProducts.keySet()) {
-                boolean success = controller.makeOrder(username, password, orderedProducts.get(sellerId),
-                        "processing", address);
-                if (success) {
-                    System.out.println("Order placed successfully!");
-                } else {
-                    System.out.println("Could not place order. Please try again.");
-                }
+        for (int sellerId : orderedProducts.keySet()) {
+            boolean success = controller.makeOrder(username, password, orderedProducts.get(sellerId),
+                    "processing", address);
+            if (success) {
+                System.out.println("Order placed successfully!");
+            } else {
+                System.out.println("Could not place order. Please try again.");
             }
         }
     }
 
 
     private void viewMyListings(String username, String password) {
-        System.out.println("Your Current Listings:");
         List<Product> myListings = controller.getMyListings(username, password);
+
+        JDialog dialog = new JDialog(DisplayGUI.frame, "Your Current Listings", true);
+        dialog.setLayout(new BorderLayout());
+
+        JPanel listingsPanel = new JPanel();
+        listingsPanel.setLayout(new BoxLayout(listingsPanel, BoxLayout.Y_AXIS));
+
         if (myListings.isEmpty()) {
-            System.out.println("You have no products listed.");
-        }
-        else{
-            myListings.forEach(System.out::println);
-        }
-        boolean managingListings = true;
+            listingsPanel.add(new JLabel("You have no products listed."));
+        } else {
+            for (Product product : myListings) {
+                JPanel productPanel = new JPanel();
+                productPanel.setLayout(new BorderLayout());
 
-
-        while (managingListings) {
-            System.out.println("\nOptions:");
-            System.out.println("1. Add Product to My Listings");
-            System.out.println("2. Delete Product from My Listings");
-            System.out.println("0. Back to Main Menu");
-            boolean validInput = false;
-            int choice = -1;
-
-
-            while (!validInput) {
-                System.out.print("Select an option: ");
-                try {
-                    if (!scanner.hasNextInt()) {
-                        throw new ValidationException("Invalid input. Please enter a valid number.");
-                    }
-                    choice = scanner.nextInt();
-                    scanner.nextLine();
-                    validInput = true;
-                } catch (ValidationException e) {
-                    System.out.println("Error: " + e.getMessage());
-                    scanner.nextLine();
+                JLabel imageLabel;
+                if (product.getImagePath() != null) {
+                    ImageIcon icon = new ImageIcon(product.getImagePath());
+                    Image img = icon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+                    imageLabel = new JLabel(new ImageIcon(img));
+                } else {
+                    imageLabel = new JLabel("No Image");
                 }
-            }
+                productPanel.add(imageLabel, BorderLayout.WEST);
 
+                JTextArea productTextArea = new JTextArea(product.toString());
+                productTextArea.setEditable(false);
+                productTextArea.setMargin(new Insets(10, 10, 10, 10));
+                productTextArea.setLineWrap(true);
+                productTextArea.setWrapStyleWord(true);
+                productPanel.add(productTextArea, BorderLayout.CENTER);
 
-            switch (choice) {
-                case 1 -> addProductToMyListings(username, password);
-                case 2 -> deleteProductFromMyListings(username, password, myListings);
-                case 0 -> managingListings = false;
-                default -> System.out.println("Invalid choice. Please try again.");
+                listingsPanel.add(productPanel);
             }
         }
+
+        JScrollPane scrollPane = new JScrollPane(listingsPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+        JPanel optionsPanel = new JPanel();
+        JButton addButton = new JButton("Add Product to My Listings");
+        JButton deleteButton = new JButton("Delete Product from My Listings");
+        JButton backButton = new JButton("Back to Main Menu");
+
+        addButton.addActionListener(e -> {
+            addProductToMyListings(username, password);
+        });
+
+        deleteButton.addActionListener(e -> {
+            deleteProductFromMyListings(username, password, myListings);
+        });
+
+        backButton.addActionListener(e -> {
+            dialog.dispose();
+        });
+
+        optionsPanel.add(addButton);
+        optionsPanel.add(deleteButton);
+        optionsPanel.add(backButton);
+
+
+        dialog.add(scrollPane, BorderLayout.CENTER);
+        dialog.add(optionsPanel, BorderLayout.SOUTH);
+
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(DisplayGUI.frame);
+        dialog.setVisible(true);
     }
+
+
+
+
 
     private void addProductToMyListings(String username, String password) {
-        System.out.println("Enter product details to add to your listings:");
+
         List<Category> categories = controller.getCategories();
-        System.out.println("Choose a category ID: ");
-        for (Category value : categories) {
-            System.out.println(value);
-        }
 
-        try {
-            int category;
-            while (true) {
-                try {
-                    System.out.print("Category ID: ");
-                    String input = scanner.nextLine();
-                    if (!input.matches("\\d+")) {
-                        throw new ValidationException("Invalid category ID: Please enter a valid integer.");
-                    }
-                    category = Integer.parseInt(input);
-                    int finalCategory = category;
-                    if (categories.stream().map(Category::getId).noneMatch(x -> x.equals(finalCategory))) {
-                        throw new ValidationException("Invalid category ID: Please select a valid category from the list.");
-                    }
-                    break;
-                } catch (ValidationException e) {
-                    System.out.println(e.getMessage());
+
+        JDialog dialog = new JDialog(DisplayGUI.frame, "Add Product to Listings", true);
+        dialog.setLayout(new GridLayout(0, 2));
+
+
+        JTextField nameField = new JTextField();
+        JTextField colorField = new JTextField();
+        JTextField sizeField = new JTextField();
+        JTextField priceField = new JTextField();
+        JTextField brandField = new JTextField();
+        JTextField conditionField = new JTextField();
+
+
+        JComboBox<Category> categoryComboBox = new JComboBox<>(categories.toArray(new Category[0]));
+
+
+        dialog.add(new JLabel("Choose a category:"));
+        dialog.add(categoryComboBox);
+        dialog.add(new JLabel("Name:"));
+        dialog.add(nameField);
+        dialog.add(new JLabel("Color:"));
+        dialog.add(colorField);
+        dialog.add(new JLabel("Size:"));
+        dialog.add(sizeField);
+        dialog.add(new JLabel("Price:"));
+        dialog.add(priceField);
+        dialog.add(new JLabel("Brand:"));
+        dialog.add(brandField);
+        dialog.add(new JLabel("Condition:"));
+        dialog.add(conditionField);
+
+
+        JButton submitButton = new JButton("Add Product");
+        submitButton.addActionListener(e -> {
+            try {
+
+                int categoryId = ((Category) categoryComboBox.getSelectedItem()).getId();
+                String name = nameField.getText().trim();
+                String color = colorField.getText().trim();
+                int size = Integer.parseInt(sizeField.getText().trim());
+                double price = Double.parseDouble(priceField.getText().trim());
+                String brand = brandField.getText().trim();
+                String condition = conditionField.getText().trim();
+
+                if (name.isEmpty() || !name.matches("[a-zA-Z0-9_ ]+")) {
+                    throw new ValidationException("Invalid product name.");
                 }
-            }
-
-            String name,color,brand,condition;
-            int size;
-            double price;
-
-
-            while (true) {
-                try {
-                    System.out.print("Name: ");
-                    name = scanner.nextLine();
-                    if (name.isEmpty() || !name.matches("[a-zA-Z0-9_ ]+")) {
-                        throw new ValidationException("Invalid product name: The product name must be a non-empty string and contain only letters, numbers, underscores, or spaces.");
-                    }
-                    break;
-                } catch (ValidationException e) {
-                    System.out.println(e.getMessage());
+                if (color.isEmpty() || !color.matches("[a-zA-Z]+")) {
+                    throw new ValidationException("Invalid product color.");
                 }
-            }
-
-
-            while (true) {
-                try {
-                    System.out.print("Color: ");
-                    color = scanner.nextLine();
-                    if (color.isEmpty() || !color.matches("[a-zA-Z]+")) {
-                        throw new ValidationException("Invalid product color: The product color must be a non-empty string and contain only letters.");
-                    }
-                    break;
-                } catch (ValidationException e) {
-                    System.out.println(e.getMessage());
+                if (size <= 0) {
+                    throw new ValidationException("Invalid product size.");
                 }
-            }
-
-
-            while (true) {
-                try {
-                    System.out.print("Size: ");
-                    String sizeInput = scanner.nextLine();
-                    if (!sizeInput.matches("\\d+")) {
-                        throw new ValidationException("Invalid product size: The size must be an integer greater than zero.");
-                    }
-                    size = Integer.parseInt(sizeInput);
-                    if (size <= 0) {
-                        throw new ValidationException("Invalid product size: The size must be greater than zero.");
-                    }
-                    break;
-                } catch (ValidationException e) {
-                    System.out.println(e.getMessage());
+                if (price < 0.00) {
+                    throw new ValidationException("Invalid product price.");
                 }
-            }
-
-
-            while (true) {
-                try {
-                    System.out.print("Price: ");
-                    String priceInput = scanner.nextLine();
-                    if (!priceInput.matches("\\d+(\\.\\d{1,2})?")) {
-                        throw new ValidationException("Invalid product price: The price must be a positive number with up to two decimal places.");
-                    }
-                    price = Double.parseDouble(priceInput);
-                    if (price < 0.00) {
-                        throw new ValidationException("Invalid product price: The price cannot be negative.");
-                    }
-                    break;
-                } catch (ValidationException e) {
-                    System.out.println(e.getMessage());
+                if (brand.isEmpty() || !brand.matches("[a-zA-Z0-9_ ]+")) {
+                    throw new ValidationException("Invalid product brand.");
                 }
-            }
-
-
-            while (true) {
-                try {
-                    System.out.print("Brand: ");
-                    brand = scanner.nextLine();
-                    if (brand.isEmpty() || !brand.matches("[a-zA-Z0-9_ ]+")) {
-                        throw new ValidationException("Invalid product brand: The brand must be a non-empty string containing only letters, numbers, underscores, or spaces.");
-                    }
-                    break;
-                } catch (ValidationException e) {
-                    System.out.println(e.getMessage());
+                if (condition.isEmpty() || !condition.matches("[a-zA-Z]+")) {
+                    throw new ValidationException("Invalid product condition.");
                 }
-            }
 
 
-            while (true) {
-                try {
-                    System.out.print("Condition (e.g., New, Used): ");
-                    condition = scanner.nextLine();
-                    if (condition.isEmpty() || !condition.matches("[a-zA-Z]+")) {
-                        throw new ValidationException("Invalid product condition: The condition must be a non-empty string containing only letters.");
-                    }
-                    break;
-                } catch (ValidationException e) {
-                    System.out.println(e.getMessage());
+                boolean success = controller.addToUserListings(username, password, categoryId, name, color, size, price, brand, condition, 0, 0);
+                if (success) {
+                    JOptionPane.showMessageDialog(dialog, "Product added to your listings successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    dialog.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "Could not add product to your listings. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
+            } catch (ValidationException ex) {
+                JOptionPane.showMessageDialog(dialog, ex.getMessage(), "Validation Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Please enter valid numeric values for size and price.", "Input Error", JOptionPane.ERROR_MESSAGE);
             }
+        });
 
-            boolean success = controller.addToUserListings(username, password, category, name, color, size, price, brand, condition, 0, 0);
-            if (success) {
-                System.out.println("Product added to your listings successfully!");
-            } else {
-                System.out.println("Could not add product to your listings. Please try again.");
-            }
+        dialog.add(submitButton);
 
-        } catch (ValidationException e) {
-            System.out.println(e.getMessage());
-        }
+        dialog.pack();
+        dialog.setLocationRelativeTo(DisplayGUI.frame);
+        dialog.setVisible(true);
     }
+
+
+
 
     private void deleteProductFromMyListings(String username, String password, List<Product> myListings) {
         if (myListings.isEmpty()) {
-            System.out.println("You have no products listed to delete.");
+            JOptionPane.showMessageDialog(DisplayGUI.frame, "You have no products listed to delete.", "No Products", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
-        int productId = -1;
-        boolean validInput = false;
 
-        while (!validInput) {
-            System.out.print("Enter the ID of the product you wish to delete: ");
-            try {
-                if (!scanner.hasNextInt()) {
-                    throw new ValidationException("Invalid input. Please enter a valid product ID.");
-                }
-                productId = scanner.nextInt();
-                scanner.nextLine();
+        JDialog dialog = new JDialog(DisplayGUI.frame, "Delete Product", true);
+        dialog.setLayout(new BorderLayout());
 
-                int finalProductId = productId;
-                if (myListings.stream().map(Product::getId).anyMatch(x -> x.equals(finalProductId))) {
-                    validInput = true;
-                } else {
-                    System.out.println("Invalid product ID. Please enter a valid ID from your listings.");
+        JPanel listingsPanel = new JPanel();
+        listingsPanel.setLayout(new BoxLayout(listingsPanel, BoxLayout.Y_AXIS));
+
+        for (Product product : myListings) {
+            JButton deleteButton = new JButton("Delete " + product.getName() + " (ID: " + product.getId() + ")");
+
+            deleteButton.addActionListener(e -> {
+                int confirmation = JOptionPane.showConfirmDialog(dialog,
+                        "Are you sure you want to delete " + product.getName() + "?",
+                        "Confirm Deletion",
+                        JOptionPane.YES_NO_OPTION);
+
+                if (confirmation == JOptionPane.YES_OPTION) {
+                    boolean success = controller.removeFromUserListings(username, password, product.getId());
+                    if (success) {
+                        JOptionPane.showMessageDialog(dialog, "Product deleted successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        listingsPanel.remove(deleteButton);
+                        listingsPanel.revalidate();
+                        listingsPanel.repaint();
+                    } else {
+                        JOptionPane.showMessageDialog(dialog, "Product deletion failed.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
-            } catch (ValidationException e) {
-                System.out.println("Error: " + e.getMessage());
-                scanner.nextLine();
-            }
+            });
+            listingsPanel.add(deleteButton);
         }
 
 
-        boolean success = controller.removeFromUserListings(username, password, productId);
-        if (success) {
-            System.out.println("Product deleted successfully.");
-        } else {
-            System.out.println("Product deletion failed.");
-        }
+        JScrollPane scrollPane = new JScrollPane(listingsPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+
+        dialog.add(scrollPane, BorderLayout.CENTER);
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> dialog.dispose());
+        dialog.add(cancelButton, BorderLayout.SOUTH);
+
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(DisplayGUI.frame);
+        dialog.setVisible(true);
     }
+
+
+
+
 
     private void browseUsersUser(String username, String password) {
         boolean browsing = true;
         List<User> displayedUsers = new ArrayList<>();
+
+
+        displayGUI.setUserActionListener(new DisplayGUI.UserActionListener() {
+            @Override
+            public void onViewReviews(int userId) {
+                viewUserReviews(userId);
+            }
+
+            @Override
+            public void onViewListings(int userId) {
+                viewUserListings(userId);
+            }
+
+            @Override
+            public void onLeaveReview(int userId) {
+                selectUserForReview(username, password, userId);
+            }
+        });
+
         while (browsing) {
             System.out.println("User Browsing Options: ");
             System.out.println("1. Sort Users");
             System.out.println("2. Filter Users");
-            System.out.println("3. Select User for Review");
-            System.out.println("4. View User Reviews");
-            System.out.println("5. View User Listings");
-            System.out.println("0. Go Back to Repo.Main Menu");
+            System.out.println("3.Select User via GUI for actions");
+            System.out.println("0. Go Back to Main Menu");
             System.out.print("Choose an option: ");
 
-            boolean validInput = false;
-            while (!validInput) {
-                try {
-                    System.out.print("Choose an option: ");
-                    if (!scanner.hasNextInt()) {
-                        throw new ValidationException("Invalid input. Please enter a valid number.");
-                    }
-                    int choice = scanner.nextInt();
-                    scanner.nextLine();
-                    validInput = true;
+            try {
+                if (!scanner.hasNextInt()) {
+                    throw new ValidationException("Invalid input. Please enter a valid number.");
+                }
+                int choice = scanner.nextInt();
+                scanner.nextLine();
 
-                    switch (choice) {
-                        case 1 -> displayedUsers = sortUsers();
-                        case 2 -> displayedUsers = filterUsers();
-                        case 3 -> selectUserForReview(username, password, displayedUsers);
-                        case 4 -> viewUserReviews(displayedUsers);
-                        case 5 -> viewUserListings(displayedUsers);
-                        case 0 -> browsing = false;
-                        default -> {
-                            System.out.println("Invalid choice. Please try again.");
-                            validInput = false;
+                switch (choice) {
+                    case 1 -> {
+                        displayedUsers = sortUsers();
+                        displayGUI.updateUsers(displayedUsers);
+                        System.out.println("Sorted users displayed in GUI.");
+                    }
+                    case 2 -> {
+                        displayedUsers = filterUsers();
+                        displayGUI.updateUsers(displayedUsers);
+                        System.out.println("Filtered users displayed in GUI.");
+                    }
+                    case 3 -> {
+                        if (displayedUsers.isEmpty()) {
+                            System.out.println("Please sort or filter users first.");
+                        } else {
+                            displayGUI.updateUsers(displayedUsers);
+                            System.out.println("Please select a user from the GUI to proceed.");
                         }
                     }
-                } catch (ValidationException e) {
-                    System.out.println("Error: " + e.getMessage());
-                    scanner.nextLine();
+                    case 0 -> browsing = false;
+                    default -> System.out.println("Invalid choice. Please try again.");
                 }
+            } catch (ValidationException e) {
+                System.out.println("Error: " + e.getMessage());
+                scanner.nextLine();
             }
         }
     }
@@ -1550,138 +1632,141 @@ public class ConsoleApp {
         return filteredUsers;
     }
 
-    private void viewUserReviews(List<User> displayedUsers) {
-        if (displayedUsers.isEmpty()) {
-            System.out.println("No users to select. Please search or filter first.");
-            return;
-        }
-        int userId;
-        while (true) {
-            try {
-                System.out.print("Enter User ID to see their rating: ");
-                if (!scanner.hasNextInt()) {
-                    throw new ValidationException("Invalid input. Please enter a valid User ID.");
-                }
-                userId = scanner.nextInt();
-                scanner.nextLine();
-                int finalUserId = userId;
-                if (displayedUsers.stream().map(User::getId).noneMatch(x -> x.equals(finalUserId))) {
-                    System.out.println("Invalid User ID. Please try again.");
-                } else {
-                    break;
-                }
-            } catch (ValidationException e) {
-                System.out.println("Error: " + e.getMessage());
-                scanner.nextLine();
-            }
-        }
-
+    private void viewUserReviews(int userId) {
         List<Review> reviews = controller.displayReviewsLeftForUser(userId);
-        System.out.println("User's trust score is: ");
-        System.out.println(controller.getUserTrustScore(userId));
-        for (Review review : reviews) {
-            System.out.println(review);
+        double trustScore = controller.getUserTrustScore(userId);
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout(10, 10));
+
+        JPanel trustScorePanel = new JPanel();
+        trustScorePanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        JLabel trustScoreLabel = new JLabel("User's Trust Score: " + trustScore);
+        trustScoreLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        trustScorePanel.add(trustScoreLabel);
+
+        mainPanel.add(trustScorePanel, BorderLayout.NORTH);
+
+        JPanel reviewsPanel = new JPanel();
+        reviewsPanel.setLayout(new BoxLayout(reviewsPanel, BoxLayout.Y_AXIS));
+
+        if (reviews.isEmpty()) {
+            reviewsPanel.add(new JLabel("No reviews available for this user."));
+        } else {
+            for (Review review : reviews) {
+                JTextArea reviewDetails = new JTextArea(review.toString());
+                reviewDetails.setEditable(false);
+                reviewDetails.setLineWrap(true);
+                reviewDetails.setWrapStyleWord(true);
+                reviewDetails.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+                reviewDetails.setBackground(new Color(240, 240, 240));
+                reviewsPanel.add(reviewDetails);
+                reviewsPanel.add(Box.createVerticalStrut(10));
+            }
         }
+
+
+        JScrollPane scrollPane = new JScrollPane(reviewsPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+
+        JOptionPane.showMessageDialog(DisplayGUI.frame, mainPanel, "User Reviews", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private void selectUserForReview(String username, String password, List<User> displayedUsers) {
-        if (displayedUsers.isEmpty()) {
-            System.out.println("No users to select. Please search or filter first.");
-            return;
-        }
-        int userId;
-        while (true) {
-            try {
-                System.out.print("Enter User ID to leave a review for: ");
-                if (!scanner.hasNextInt()) {
-                    throw new ValidationException("Invalid input. Please enter a valid User ID.");
-                }
-                userId = scanner.nextInt();
-                scanner.nextLine();
-                int finalUserId = userId;
-                if (displayedUsers.stream().map(User::getId).noneMatch(x -> x.equals(finalUserId))) {
-                    System.out.println("Invalid User ID. Please try again.");
-                } else {
-                    break;
-                }
-            } catch (ValidationException e) {
-                System.out.println("Error: " + e.getMessage());
-                scanner.nextLine();
-            }
-        }
+    private void selectUserForReview(String username, String password, int userId) {
+        JTextField reviewContentField = new JTextField();
+        JTextField ratingField = new JTextField();
 
-        String content;
-        while (true) {
-            System.out.print("Enter review content: ");
-            content = scanner.nextLine();
-            if (!content.isEmpty()) {
-                break;
-            } else {
-                System.out.println("Review content cannot be empty. Please try again.");
-            }
-        }
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
-        double rating;
-        while (true) {
+        contentPanel.add(new JLabel("Enter Review Content:"));
+        contentPanel.add(reviewContentField);
+        contentPanel.add(Box.createVerticalStrut(10));
+        contentPanel.add(new JLabel("Enter Rating (1-5):"));
+        contentPanel.add(ratingField);
+
+        JScrollPane scrollPane = new JScrollPane(contentPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+        int result = JOptionPane.showConfirmDialog(
+                DisplayGUI.frame, scrollPane, "Leave Review", JOptionPane.OK_CANCEL_OPTION);
+
+        if (result == JOptionPane.OK_OPTION) {
+            String content = reviewContentField.getText();
+            double rating;
+
             try {
-                System.out.print("Enter rating (1-5): ");
-                if (!scanner.hasNextDouble()) {
-                    throw new ValidationException("Invalid input. Please enter a valid rating between 1 and 5.");
-                }
-                rating = scanner.nextDouble();
-                scanner.nextLine();
+                rating = Double.parseDouble(ratingField.getText());
                 if (rating < 1 || rating > 5) {
-                    System.out.println("Rating must be between 1 and 5. Please try again.");
-                } else {
-                    break;
+                    throw new NumberFormatException();
                 }
-            } catch (ValidationException e) {
-                System.out.println("Error: " + e.getMessage());
-                scanner.nextLine();
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(DisplayGUI.frame, "Invalid rating. Please enter a value between 1 and 5.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-        }
 
-        boolean success = controller.writeReview(username, password, rating, content, userId);
-        if (success) {
-            System.out.println("Review added successfully.");
-        } else {
-            System.out.println("Review failed. Please try again.");
+            boolean success = controller.writeReview(username, password, rating, content, userId);
+            String message = success ? "Review added successfully." : "Review failed. Please try again.";
+            JOptionPane.showMessageDialog(DisplayGUI.frame, message, "Review Status", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
 
-    private void viewUserListings(List<User> displayedUsers) {
-        if (displayedUsers.isEmpty()) {
-            System.out.println("No users to select. Please search or filter first.");
-            return;
-        }
-        int userId;
-        while (true) {
-            try {
-                System.out.print("Enter User ID to view their listings: ");
-                if (!scanner.hasNextInt()) {
-                    throw new ValidationException("Invalid input. Please enter a valid User ID.");
-                }
-                userId = scanner.nextInt();
-                scanner.nextLine();
-                int finalUserId = userId;
-                if (displayedUsers.stream().map(User::getId).noneMatch(x -> x.equals(finalUserId))) {
-                    System.out.println("Invalid User ID. Please try again.");
+    private void viewUserListings(int userId) {
+        List<Product> userProducts = controller.getUserListing(userId);
+
+        JDialog dialog = new JDialog(DisplayGUI.frame, "User  Listings", true);
+        dialog.setLayout(new BorderLayout());
+
+        JPanel listingsPanel = new JPanel();
+        listingsPanel.setLayout(new BoxLayout(listingsPanel, BoxLayout.Y_AXIS));
+
+        if (userProducts.isEmpty()) {
+            listingsPanel.add(new JLabel("This user has no listed products."));
+        } else {
+            for (Product product : userProducts) {
+                JPanel productPanel = new JPanel();
+                productPanel.setLayout(new BorderLayout());
+
+                JLabel imageLabel;
+                if (product.getImagePath() != null) {
+                    ImageIcon icon = new ImageIcon(product.getImagePath());
+                    Image img = icon.getImage().getScaledInstance(500, 400, Image.SCALE_SMOOTH);
+                    imageLabel = new JLabel(new ImageIcon(img));
                 } else {
-                    break;
+                    imageLabel = new JLabel("No Image");
                 }
-            } catch (ValidationException e) {
-                System.out.println("Error: " + e.getMessage());
-                scanner.nextLine();
+                productPanel.add(imageLabel, BorderLayout.WEST);
+
+                // Display the product details
+                JTextArea productDetails = new JTextArea(product.toString());
+                productDetails.setEditable(false);
+                productDetails.setMargin(new Insets(10, 10, 10, 10));
+                productDetails.setLineWrap(true);
+                productDetails.setWrapStyleWord(true);
+                productPanel.add(productDetails, BorderLayout.CENTER);
+
+                listingsPanel.add(productPanel);
             }
         }
 
-        List<Product> userProducts = controller.getUserListing(userId);
-        if (userProducts.isEmpty()) {
-            System.out.println("This user has no listed products.");
-        } else {
-            userProducts.forEach(System.out::println);
-        }
+
+        JScrollPane scrollPane = new JScrollPane(listingsPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+        dialog.add(scrollPane, BorderLayout.CENTER);
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> dialog.dispose());
+        dialog.add(closeButton, BorderLayout.SOUTH);
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(DisplayGUI.frame);
+        dialog.setVisible(true);
     }
 
 //ADMIN
