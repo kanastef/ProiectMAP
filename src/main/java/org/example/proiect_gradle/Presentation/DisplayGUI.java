@@ -108,8 +108,6 @@ public class DisplayGUI {
                 selectButton.addActionListener(e -> {
                     if (productActionListener != null) {
                         productActionListener.onProductSelected(product);
-                    }else{
-                        JOptionPane.showMessageDialog(panel, "Create an account or log in to interact with products", "Warning", JOptionPane.WARNING_MESSAGE);
                     }
                 });
                 productPanel.add(selectButton, BorderLayout.EAST);
@@ -120,7 +118,6 @@ public class DisplayGUI {
         panel.revalidate();
         panel.repaint();
     }
-
 
 
 
@@ -244,16 +241,19 @@ public class DisplayGUI {
 
         switch (choice) {
             case 0:
+                // Leave Review for User
                 if (userActionListener != null) {
                     userActionListener.onLeaveReview(user.getId());
                 }
                 break;
             case 1:
+                // View User Reviews
                 if (userActionListener != null) {
                     userActionListener.onViewReviews(user.getId());
                 }
                 break;
             case 2:
+                // View User Listings
                 if (userActionListener != null) {
                     userActionListener.onViewListings(user.getId());
                 }
@@ -265,7 +265,6 @@ public class DisplayGUI {
 
     public void updateUsersAdmin(List<User> users) {
         panel.removeAll();
-
         if (users == null || users.isEmpty()) {
             panel.setLayout(new BorderLayout());
             JLabel noUsersLabel = new JLabel("No users to display. Please sort or filter users.");
@@ -313,7 +312,8 @@ public class DisplayGUI {
     public static void showAdminOptions(User user) {
         Object[] options = {
                 "Delete User",
-                "Manage User Reviews",
+                "View Reviews Left for User",
+                "View Reviews Left By User",
                 "Cancel"
         };
 
@@ -328,18 +328,28 @@ public class DisplayGUI {
                 options[0]
         );
 
-        if (choice == 0) {
-            int confirmDelete = JOptionPane.showConfirmDialog(
-                    DisplayGUI.frame,
-                    "Are you sure you want to delete user: " + user.getId() + "?",
-                    "Confirm Delete",
-                    JOptionPane.YES_NO_OPTION
-            );
-            if (confirmDelete == JOptionPane.YES_OPTION) {
+        switch (choice) {
+            case 0:
+
                 if (adminActionListener != null) {
                     adminActionListener.onDeleteUser(user.getId());
                 }
-            }
+
+
+            case 1:
+                if(adminActionListener!=null){
+                    adminActionListener.onViewReviewsLeftForUser(user.getId());
+
+                }
+            case 2:
+                if(adminActionListener!=null){
+                    adminActionListener.onViewReviewsLeftByUser(user.getId());
+                }
+
+
+
+            default:
+                break;
         }
     }
 
@@ -363,13 +373,15 @@ public class DisplayGUI {
 
     public interface AdminActionListener {
         void onDeleteUser(int userId);
-
+        void onViewReviewsLeftForUser(int userId);
+        void onViewReviewsLeftByUser(int userId);
 
     }
 
 
 
     public void refreshWelcomePage() {
+        // Logic to return to the welcome page
         panel.removeAll();
         panel.setLayout(new BorderLayout());
         panel.add(welcomeLabel, BorderLayout.CENTER);
@@ -377,3 +389,4 @@ public class DisplayGUI {
         panel.repaint();
     }
 }
+

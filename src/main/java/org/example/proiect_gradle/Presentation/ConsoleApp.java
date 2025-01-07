@@ -127,6 +127,13 @@ public class ConsoleApp {
         JTextField emailField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
         JTextField phoneNumberField = new JTextField();
+        JCheckBox showPasswordCheckBox = new JCheckBox("Show Password");
+
+        Dimension inputFieldSize = new Dimension(200, 30);
+        usernameField.setPreferredSize(inputFieldSize);
+        emailField.setPreferredSize(inputFieldSize);
+        passwordField.setPreferredSize(inputFieldSize);
+        phoneNumberField.setPreferredSize(inputFieldSize);
 
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
@@ -139,12 +146,22 @@ public class ConsoleApp {
         contentPanel.add(Box.createVerticalStrut(10));
         contentPanel.add(new JLabel("Password:"));
         contentPanel.add(passwordField);
+        contentPanel.add(showPasswordCheckBox);
         contentPanel.add(Box.createVerticalStrut(10));
         contentPanel.add(new JLabel("Phone Number:"));
         contentPanel.add(phoneNumberField);
 
         JScrollPane scrollPane = new JScrollPane(contentPanel);
-        scrollPane.setPreferredSize(new Dimension(800, 700));
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+
+
+        showPasswordCheckBox.addActionListener(e -> {
+            if (showPasswordCheckBox.isSelected()) {
+                passwordField.setEchoChar((char) 0);
+            } else {
+                passwordField.setEchoChar('•');
+            }
+        });
 
         int result = JOptionPane.showConfirmDialog(
                 DisplayGUI.frame, scrollPane, "Sign Up", JOptionPane.OK_CANCEL_OPTION);
@@ -192,25 +209,37 @@ public class ConsoleApp {
     private void logIn() {
         JTextField usernameField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
+        JCheckBox showPasswordCheckBox = new JCheckBox("Show Password");
 
+        Dimension inputFieldSize = new Dimension(10, 10);
+        usernameField.setPreferredSize(inputFieldSize);
+        passwordField.setPreferredSize(inputFieldSize);
 
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 
-
         contentPanel.add(new JLabel("Username:"));
         contentPanel.add(usernameField);
-        contentPanel.add(Box.createVerticalStrut(10));
+        contentPanel.add(Box.createVerticalStrut(5));
         contentPanel.add(new JLabel("Password:"));
         contentPanel.add(passwordField);
-        contentPanel.add(Box.createVerticalStrut(20));
+        contentPanel.add(showPasswordCheckBox);
+        contentPanel.add(Box.createVerticalStrut(5));
 
         JScrollPane scrollPane = new JScrollPane(contentPanel);
-        scrollPane.setPreferredSize(new Dimension(800, 700));
-        scrollPane.setMaximumSize(new Dimension(800, 700));
+        scrollPane.setPreferredSize(new Dimension(400, 150));
+
+
+        showPasswordCheckBox.addActionListener(e -> {
+            if (showPasswordCheckBox.isSelected()) {
+                passwordField.setEchoChar((char) 0);
+            } else {
+                passwordField.setEchoChar('•');
+            }
+        });
 
         int result = JOptionPane.showConfirmDialog(
-                DisplayGUI.frame, contentPanel, "Log In", JOptionPane.OK_CANCEL_OPTION);
+                DisplayGUI.frame, scrollPane, "Log In", JOptionPane.OK_CANCEL_OPTION);
 
         if (result == JOptionPane.OK_OPTION) {
             String username = usernameField.getText();
@@ -299,7 +328,6 @@ public class ConsoleApp {
             System.out.println("User Browsing Options: ");
             System.out.println("1. Sort Users");
             System.out.println("2. Filter Users");
-            System.out.println("3.Select User via GUI for actions");
             System.out.println("0. Go Back to Main Menu");
             System.out.print("Choose an option: ");
 
@@ -573,30 +601,30 @@ public class ConsoleApp {
     private void viewSentOffers(String username, String password) {
         List<Offer> madeOffers = controller.getMadeOffers(username, password);
 
-        JPanel offersPannel = new JPanel();
-        offersPannel.setLayout(new BoxLayout(offersPannel, BoxLayout.Y_AXIS));
+        JPanel offersPanel = new JPanel();
+        offersPanel.setLayout(new BoxLayout(offersPanel, BoxLayout.Y_AXIS));
 
         if (madeOffers.isEmpty()) {
-            offersPannel.add(new JLabel("No offers found. Please try again."));
+            offersPanel.add(new JLabel("No offers found. Please try again."));
         } else {
             for (Offer offer : madeOffers) {
-                JPanel offerPannel = new JPanel();
-                offerPannel.setLayout(new BorderLayout());
+                JPanel offerPanel = new JPanel();
+                offerPanel.setLayout(new BorderLayout());
 
 
                 JTextArea reviewTextArea = new JTextArea(offer.toString());
                 reviewTextArea.setEditable(false);
                 reviewTextArea.setMargin(new Insets(10, 10, 10, 10));
-                offerPannel.add(reviewTextArea, BorderLayout.CENTER);
+                offerPanel.add(reviewTextArea, BorderLayout.CENTER);
 
 
-                offersPannel.add(offerPannel);
+                offersPanel.add(offerPanel);
             }
         }
 
 
-        JScrollPane scrollPane = new JScrollPane(offersPannel);
-        scrollPane.setPreferredSize(new Dimension(600, 500)); // Set preferred size for the dialog
+        JScrollPane scrollPane = new JScrollPane(offersPanel);
+        scrollPane.setPreferredSize(new Dimension(600, 500));
 
         JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Your Reviews", JOptionPane.PLAIN_MESSAGE);
     }
@@ -605,11 +633,11 @@ public class ConsoleApp {
     private void viewReceivedOffers(String username, String password) {
         List<Offer> offers = controller.displayReceivedOffers(username, password);
 
-        JPanel offerPannel = new JPanel();
-        offerPannel.setLayout(new BoxLayout(offerPannel, BoxLayout.Y_AXIS));
+        JPanel offerPanel = new JPanel();
+        offerPanel.setLayout(new BoxLayout(offerPanel, BoxLayout.Y_AXIS));
 
         if (offers.isEmpty()) {
-            offerPannel.add(new JLabel("No offers found. Please try again."));
+            offerPanel.add(new JLabel("No offers found. Please try again."));
         } else {
             for (Offer offer : offers) {
                 JPanel offerItemPanel = new JPanel();
@@ -632,9 +660,9 @@ public class ConsoleApp {
                         if (success) {
                             JOptionPane.showMessageDialog(DisplayGUI.frame,
                                     "Offer accepted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                            offerPannel.remove(offerItemPanel); // Remove the accepted offer panel
-                            offerPannel.revalidate();
-                            offerPannel.repaint();
+                            offerPanel.remove(offerItemPanel);
+                            offerPanel.revalidate();
+                            offerPanel.repaint();
                         } else {
                             JOptionPane.showMessageDialog(DisplayGUI.frame,
                                     "Failed to accept offer.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -643,12 +671,12 @@ public class ConsoleApp {
                 });
                 offerItemPanel.add(acceptButton, BorderLayout.EAST);
 
-                offerPannel.add(offerItemPanel);
+                offerPanel.add(offerItemPanel);
             }
         }
 
-        JScrollPane scrollPane = new JScrollPane(offerPannel);
-        scrollPane.setPreferredSize(new Dimension(600, 500)); // Set preferred size for the dialog
+        JScrollPane scrollPane = new JScrollPane(offerPanel);
+        scrollPane.setPreferredSize(new Dimension(600, 500));
 
         JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Your Received Offers", JOptionPane.PLAIN_MESSAGE);
     }
@@ -662,7 +690,7 @@ public class ConsoleApp {
 
         contentPanel.add(new JLabel("Enter Offer Amount:"));
         contentPanel.add(offerAmountField);
-        contentPanel.add(Box.createVerticalStrut(10)); // Add spacing
+        contentPanel.add(Box.createVerticalStrut(10));
         contentPanel.add(new JLabel("Enter Offer Message:"));
         contentPanel.add(offerMessageField);
 
@@ -723,25 +751,7 @@ public class ConsoleApp {
     }
 
 
-    private void declineOffer(String username, String password,Offer selectedOffer) {
-        boolean success = controller.declineOffer(username, password, selectedOffer.getId());
-        if (success) {
-            System.out.println("Offer declined successfully!");
-        }
-        else {
-            System.out.println("Offer decline failed! Please try again.");
-        }
-    }
 
-    private void acceptOffer(String username, String password, Offer selectedOffer) {
-        boolean success = controller.acceptOffer(username, password, selectedOffer.getId());
-        if (success) {
-            System.out.println("Offer accepted successfully!");
-        }
-        else {
-            System.out.println("Offer accept failed! Please try again.");
-        }
-    }
 
     private void viewReceivedOrders(String username, String password) {
         List<Order> orders = controller.getReceivedOrders(username, password);
@@ -1739,7 +1749,7 @@ public class ConsoleApp {
                 JLabel imageLabel;
                 if (product.getImagePath() != null) {
                     ImageIcon icon = new ImageIcon(product.getImagePath());
-                    Image img = icon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+                    Image img = icon.getImage().getScaledInstance(10, 10, Image.SCALE_SMOOTH);
                     imageLabel = new JLabel(new ImageIcon(img));
                 } else {
                     imageLabel = new JLabel("No Image");
@@ -1804,10 +1814,11 @@ public class ConsoleApp {
             switch (choice) {
                 case 1 -> manageProducts(username, password);
                 case 2 -> manageUsers(username, password);
-                case 3 -> seeVisitorActivity(username, password);
+                case 3 -> seeVisitorActivity();
                 case 0 -> {
                     loggedIn = false;
                     System.out.println("Logging out...");
+                    displayGUI.refreshWelcomePage();
                 }
             }
         }
@@ -1817,142 +1828,213 @@ public class ConsoleApp {
         boolean browsing = true;
         List<User> displayedUsers = new ArrayList<>();
 
+        displayGUI.setAdminActionListener(new DisplayGUI.AdminActionListener() {
+            @Override
+            public void onDeleteUser(int userId) {
+                deleteUser(username,password,userId);
+            }
 
-        List<User> finalDisplayedUsers = displayedUsers;
-        displayGUI.setAdminActionListener(userId -> {
+            @Override
+            public void onViewReviewsLeftForUser(int userId) {
+                viewReviewsLeftForUser(username,password,userId);
+            }
 
-            controller.deleteUser(username, password, userId);
+            @Override
+            public void onViewReviewsLeftByUser(int userId) {
+                viewReviewsMadeByUser(username,password,userId);
 
-            finalDisplayedUsers.removeIf(user -> user.getId() == userId);
-
-
-            displayGUI.updateUsersAdmin(finalDisplayedUsers);
-            System.out.println("User  deleted successfully.");
+            }
         });
 
+        // User browsing options in the console
         while (browsing) {
-            System.out.println("User  Browsing Options: ");
+            System.out.println("User browsing Options: ");
             System.out.println("1. Sort Users");
             System.out.println("2. Filter Users");
-            System.out.println("3. Delete User");
-            System.out.println("4. Manage User Reviews");
+            System.out.println("Select a User from the GUI");
             System.out.println("0. Go Back to Main Menu");
-            System.out.print("Choose an option: ");
+            System.out.print("Choose an option or select a product via GUI: ");
+
             int choice;
-            try {
-                if (!scanner.hasNextInt()) {
-                    throw new ValidationException("Invalid input. Please enter a valid number.");
+            while (true) {
+                try {
+                    String input = scanner.nextLine();
+                    if (!input.matches("\\d+")) {
+                        throw new ValidationException("Please enter a valid number.");
+                    }
+                    choice = Integer.parseInt(input);
+                    if (choice < 0 || choice > 3) {
+                        throw new ValidationException("Please enter a number between 0 and 3.");
+                    }
+                    break;
+                } catch (ValidationException e) {
+                    System.out.println("Invalid input: " + e.getMessage());
+                    System.out.print("Please choose a valid option: ");
                 }
-                choice = scanner.nextInt();
-                scanner.nextLine();
+            }
 
-                switch (choice) {
-                    case 1 -> {
-                        displayedUsers = sortUsers();
-                        displayGUI.updateUsersAdmin(displayedUsers);
-                        System.out.println("Sorted users displayed in GUI.");
-                    }
-                    case 2 -> {
-                        displayedUsers = filterUsers();
-                        displayGUI.updateUsersAdmin(displayedUsers);
-                        System.out.println("Filtered users displayed in GUI.");
-                    }
-                    case 3 -> {
-                        if (displayedUsers.isEmpty()) {
-                            System.out.println("No users available. Please sort or filter users first.");
-                        } else {
-                            displayGUI.updateUsersAdmin(displayedUsers);
-                            System.out.println("Please select a user from the GUI to proceed.");
-                        }
-                    }
-                    case 4 ->{
-                        if(displayedUsers.isEmpty()){
-                            System.out.println("No users available. Please sort or filter users first.");
-                        }else{
-                            manageReviews(username,password,displayedUsers);
-                        }
-                    }
-
-                    case 0 -> {
-                        browsing = false;
-                        System.out.println("Returning to the Main Menu...");
-                    }
-                    default -> System.out.println("Invalid choice. Please enter a number between 0 and 4.");
+            switch (choice) {
+                case 1 -> {
+                    displayedUsers = sortUsers();
+                    displayGUI.updateUsersAdmin(displayedUsers);
                 }
-            } catch (ValidationException e) {
-                System.out.println("Error: " + e.getMessage());
-                scanner.nextLine();
+                case 2 -> {
+                    displayedUsers = filterUsers();
+                    displayGUI.updateUsersAdmin(displayedUsers);
+                }
+                case 3 -> {
+                    if (displayedUsers.isEmpty()) {
+                        System.out.println("Please sort or filter users first.");
+                    } else {
+                        displayGUI.updateUsers(displayedUsers);
+                        System.out.println("Please select a user from the GUI to proceed.");
+                    }
+                }
+                case 0 -> {
+                    browsing = false;
+                    displayGUI.showWelcomeMessage();
+                }
             }
         }
+
+        if (!displayedUsers.isEmpty()) {
+            displayGUI.updateUsers(displayedUsers);
+        }
+    }
+
+    private void deleteUser(String username, String password, int userId) {
+        int confirmDelete = JOptionPane.showConfirmDialog(
+                DisplayGUI.frame,
+                "Are you sure you want to delete the user with ID: " + userId + "?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirmDelete == JOptionPane.YES_OPTION) {
+            boolean success = controller.deleteUser(username, password, userId);
+            if (success) {
+                JOptionPane.showMessageDialog(
+                        DisplayGUI.frame,
+                        "User deleted successfully!",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+
+            } else {
+                JOptionPane.showMessageDialog(
+                        DisplayGUI.frame,
+                        "Failed to delete the user. Please try again.",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+    }
+
+
+    private void viewReviewsMadeByUser(String username,String password,int userId){
+        List<Review> displayedReviews = controller.displayReviewsLeftByUserVisitor(userId);
+        JPanel reviewsPanel = new JPanel();
+        reviewsPanel.setLayout(new BoxLayout(reviewsPanel, BoxLayout.Y_AXIS));
+
+        if (displayedReviews.isEmpty()) {
+            reviewsPanel.add(new JLabel("No reviews found. Please try again."));
+        } else {
+            for (Review review : displayedReviews) {
+                JPanel reviewPanel = new JPanel();
+                reviewPanel.setLayout(new BorderLayout());
+
+                JTextArea reviewTextArea = new JTextArea(review.toString());
+                reviewTextArea.setEditable(false);
+                reviewTextArea.setMargin(new Insets(10, 10, 10, 10));
+                reviewPanel.add(reviewTextArea, BorderLayout.CENTER);
+
+                JButton deleteButton = new JButton("Delete Review");
+                deleteButton.addActionListener(e -> {
+                    int confirmation = JOptionPane.showConfirmDialog(DisplayGUI.frame,
+                            "Are you sure you want to delete this review?",
+                            "Confirm Deletion",
+                            JOptionPane.YES_NO_OPTION);
+
+                    if (confirmation == JOptionPane.YES_OPTION) {
+                        boolean success = controller.deleteReviewAdmin(username, password, review.getId());
+                        if (success) {
+                            JOptionPane.showMessageDialog(DisplayGUI.frame,
+                                    "Review deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            reviewsPanel.remove(reviewPanel);
+                            reviewsPanel.revalidate();
+                            reviewsPanel.repaint();
+                        } else {
+                            JOptionPane.showMessageDialog(DisplayGUI.frame,
+                                    "Failed to delete review.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                });
+                reviewPanel.add(deleteButton, BorderLayout.EAST);
+
+                reviewsPanel.add(reviewPanel);
+            }
+        }
+
+        JScrollPane scrollPane = new JScrollPane(reviewsPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+        JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Reviews Left By Selected User", JOptionPane.PLAIN_MESSAGE);
 
     }
 
-    private void manageReviews(String username, String password, List<User> displayedUsers) {
-        if (displayedUsers.isEmpty()) {
-            System.out.println("No users to select. Please search or filter first.");
-            return;
-        }
 
-        System.out.println("Available Users:");
-        for (User  user : displayedUsers) {
-            System.out.println("ID: " + user.getId() + ", Username: " + user.getUserName());
-        }
 
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter the ID of the user you want to manage reviews for: ");
-        int userId = scanner.nextInt();
+    private void viewReviewsLeftForUser(String username, String password, int userId  ){
+        List<Review> displayedReviews = controller.displayReviewsLeftForUser(userId);
+        System.out.println(displayedReviews.size() + "nr of reviews");
+        JPanel reviewsPanel = new JPanel();
+        reviewsPanel.setLayout(new BoxLayout(reviewsPanel, BoxLayout.Y_AXIS));
 
-        User selectedUser  = displayedUsers.stream()
-                .filter(user -> user.getId() == userId)
-                .findFirst()
-                .orElse(null);
-
-        if (selectedUser  == null) {
-            System.out.println("Invalid user ID. Please try again.");
-            return;
-        }
-
-        System.out.println("Select the type of reviews to manage:");
-        System.out.println("1. Reviews Left for User");
-        System.out.println("2. Reviews Left by User");
-        int choice = scanner.nextInt();
-
-        List<Review> reviews;
-        if (choice == 1) {
-            reviews = controller.displayReviewsLeftForUser (userId);
-        } else if (choice == 2) {
-            reviews = controller.displayReviewsLeftByUser (username, password);
+        if (displayedReviews.isEmpty()) {
+            reviewsPanel.add(new JLabel("No reviews found. Please try again."));
         } else {
-            System.out.println("Invalid choice. Please try again.");
-            return;
-        }
+            for (Review review : displayedReviews) {
+                JPanel reviewPanel = new JPanel();
+                reviewPanel.setLayout(new BorderLayout());
 
-        if (reviews.isEmpty()) {
-            System.out.println("No reviews found for user ID: " + userId);
-        } else {
-            for (Review review : reviews) {
-                System.out.println("Review ID: " + review.getId());
-                System.out.println("Review Details: " + review);
+                JTextArea reviewTextArea = new JTextArea(review.toString());
+                reviewTextArea.setEditable(false);
+                reviewTextArea.setMargin(new Insets(10, 10, 10, 10));
+                reviewPanel.add(reviewTextArea, BorderLayout.CENTER);
 
-                // Prompt for deletion
-                while (true) {
-                    System.out.print("Do you want to delete this review? (yes/no): ");
-                    String deleteChoice = scanner.next();
+                JButton deleteButton = new JButton("Delete Review");
+                deleteButton.addActionListener(e -> {
+                    int confirmation = JOptionPane.showConfirmDialog(DisplayGUI.frame,
+                            "Are you sure you want to delete this review?",
+                            "Confirm Deletion",
+                            JOptionPane.YES_NO_OPTION);
 
-                    if (deleteChoice.equalsIgnoreCase("yes")) {
-                        controller.deleteReview(username, password, review.getId());
-                        System.out.println("Review deleted successfully.");
-                    } else if (deleteChoice.equalsIgnoreCase("no")) {
-                        System.out.println("Returning to the review menu...");
-                        return;
-                    } else {
-                        System.out.println("Invalid choice. Please enter 'yes' or 'no'.");
+                    if (confirmation == JOptionPane.YES_OPTION) {
+                        boolean success = controller.deleteReviewAdmin(username, password, review.getId());
+                        if (success) {
+                            JOptionPane.showMessageDialog(DisplayGUI.frame,
+                                    "Review deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            reviewsPanel.remove(reviewPanel);
+                            reviewsPanel.revalidate();
+                            reviewsPanel.repaint();
+                        } else {
+                            JOptionPane.showMessageDialog(DisplayGUI.frame,
+                                    "Failed to delete review.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
                     }
-                }
+                });
+                reviewPanel.add(deleteButton, BorderLayout.EAST);
+
+                reviewsPanel.add(reviewPanel);
             }
         }
 
-        scanner.close();
+        JScrollPane scrollPane = new JScrollPane(reviewsPanel);
+        scrollPane.setPreferredSize(new Dimension(800, 700));
+
+        JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Reviews Left By Selected User", JOptionPane.PLAIN_MESSAGE);
+
     }
 
 
@@ -1961,7 +2043,6 @@ public class ConsoleApp {
         boolean browsing = true;
         List<Product> products = new ArrayList<>();
 
-        List<Product> finalProducts1 = products;
         displayGUI.setProductActionListener(product -> {
             System.out.println("Product selected: " + product.getName());
 
@@ -1979,8 +2060,6 @@ public class ConsoleApp {
                 changeProductCategory(product.getId(), username, password);
             } else if (actionChoice == 1) {
                 deleteProductByAdmin(product.getId(), username, password);
-                //finalProducts1.removeIf(p -> p.getId() == product.getId());
-                //displayGUI.updateProducts(finalProducts1);
             } else {
                 System.out.println("No action selected.");
             }
@@ -2083,6 +2162,8 @@ public class ConsoleApp {
             return;
         }
 
+
+
         String[] columnNames = {"Category", "Sales"};
         Object[][] data = new Object[sortedIncomeByCategory.size()][2];
         int index = 0;
@@ -2093,19 +2174,23 @@ public class ConsoleApp {
             index++;
         }
 
+
         JTable table = new JTable(data, columnNames);
         table.setFillsViewportHeight(true);
         table.setRowHeight(30);
         table.setFont(new Font("Arial", Font.PLAIN, 14));
         table.getColumnModel().getColumn(1).setPreferredWidth(100);
 
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Category Sales"));
-        scrollPane.setPreferredSize(new Dimension(500, 400));
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+
 
         JDialog dialog = new JDialog((Frame) null, "Category Sales", true);
         dialog.getContentPane().add(scrollPane);
         dialog.pack();
+
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int dialogWidth = dialog.getWidth();
@@ -2114,6 +2199,7 @@ public class ConsoleApp {
         int y = (screenSize.height - dialogHeight) / 2;
         dialog.setLocation(x, y);
 
+
         dialog.setVisible(true);
     }
 
@@ -2121,8 +2207,8 @@ public class ConsoleApp {
 
         int response = JOptionPane.showConfirmDialog(
                 null,
-                "Are you sure you want to delete this product?",
-                "Confirm Deletion",
+                "Are you sure you want to delete this product?", // Message
+                "Confirm Deletion", // Title
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.WARNING_MESSAGE
         );
@@ -2142,7 +2228,7 @@ public class ConsoleApp {
 
     }
 
-    private void seeVisitorActivity(String username, String password) {
+    private void seeVisitorActivity() {
         System.out.println("The Marketplace App has been visited by: ");
         List<Visitor> visitors = controller.getVisitors();
         for (Visitor visitor : visitors) {
@@ -2151,13 +2237,16 @@ public class ConsoleApp {
     }
 
     private void changeProductCategory(int productId, String username, String password) {
+        // Create a JFrame for the category selection
         JFrame frame = new JFrame("Select New Category");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(700, 400);
         frame.setLayout(new FlowLayout());
 
+
         JLabel label = new JLabel("Choose a new category for the product:");
-        label.setFont(new Font("Arial", Font.BOLD, 16));
+        label.setFont(new Font("Arial", Font.BOLD, 16)); // Set font size and style
+
 
         JComboBox<Category> categoryComboBox = new JComboBox<>();
         List<Category> categories = controller.getCategories();
@@ -2165,9 +2254,12 @@ public class ConsoleApp {
             categoryComboBox.addItem(category);
         }
 
+
         JButton confirmButton = new JButton("Confirm");
         confirmButton.addActionListener(e -> {
+
             int categoryId = ((Category) Objects.requireNonNull(categoryComboBox.getSelectedItem())).getId();
+
 
             boolean success = controller.changeCategory(productId, categoryId, username, password);
             if (success) {
@@ -2178,6 +2270,7 @@ public class ConsoleApp {
             frame.dispose();
         });
 
+
         frame.add(label);
         frame.add(categoryComboBox);
         frame.add(confirmButton);
@@ -2186,8 +2279,6 @@ public class ConsoleApp {
         int x = screenSize.width - frame.getWidth();
         int y = (screenSize.height - frame.getHeight()) / 2;
         frame.setLocation(x, y);
-
-
 
         frame.setVisible(true);
     }

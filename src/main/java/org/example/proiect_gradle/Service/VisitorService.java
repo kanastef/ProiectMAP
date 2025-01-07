@@ -446,6 +446,21 @@ public class VisitorService {
 
     }
 
+    public List<Review> displayReviewsLeftByUser(int userId){
+        User user=userRepo.read(userId);
+        List<Review> receivedReviews=new ArrayList<>();
+        if(user != null){
+            List<Review> reviews=reviewRepo.getAll();
+            for(Review review:reviews){
+                if (review.getReviewer() == user.getId()){
+                    receivedReviews.add(review);
+                }
+            }
+        }
+        return receivedReviews;
+
+    }
+
 
 
 

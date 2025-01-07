@@ -250,6 +250,10 @@ public class Controller {
         return userService.getMyScore(username, password);
     }
 
+    public List<Review> displayReviewsLeftByUserVisitor(int userId){
+        return visitorService.displayReviewsLeftByUser(userId);
+    }
+
 
 
     //admin

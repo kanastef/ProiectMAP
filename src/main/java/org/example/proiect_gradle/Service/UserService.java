@@ -219,7 +219,7 @@ public class UserService extends VisitorService {
             }
                 List<Offer> offers = offerRepo.getAll();
                 for (Offer offer : offers) {
-                    if (offer.getSender() == user.getId()) {
+                    if (offer.getReceiver() == user.getId()) {
                         personalOffers.add(offer);
                     }
                 }
