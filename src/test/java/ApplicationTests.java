@@ -593,7 +593,7 @@ public class ApplicationTests {
         for (IRepository<User> userRepo : userRepositories) {
             userRepo.create(user1);
             userRepo.create(user2);
-            //System.out.println(userRepo.getAll());
+            System.out.println(userRepo.getAll());
             assertEquals(1, user1.getId());
             assertEquals(2, user2.getId());
         }

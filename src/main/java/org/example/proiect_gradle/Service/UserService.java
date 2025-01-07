@@ -1,5 +1,7 @@
 package org.example.proiect_gradle.Service;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -547,7 +549,7 @@ public class UserService extends VisitorService {
                     throw new EntityNotFoundException("Product with ID " + productId + " not found.");
                 }
 
-                if (!user.getFavourites().contains(productId) && productId != user.getId()) {
+                if (!user.getFavourites().contains(productId)) {
                     user.getFavourites().add(productId);
                     System.out.println(user.getFavourites());
                     userRepo.update(user);

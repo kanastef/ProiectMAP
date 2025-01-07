@@ -35,7 +35,7 @@ public class DBProductRepository extends DBRepository<Product>{
 
     public PreparedStatement getInsertStatement(Connection c, Product item) throws DatabaseException {
         try {
-            PreparedStatement stmt = c.prepareStatement("INSERT INTO products(name, color, size, price, brand, cond, nrOfViews, nrOfLikes, available, listedBy, category) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            PreparedStatement stmt = c.prepareStatement("INSERT INTO products(name, color, size, price, brand, cond, nrOfViews, nrOfLikes, available, listedBy, category, imagePath) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             stmt.setString(1, item.getName());
             stmt.setString(2, item.getColor());
             stmt.setInt(3, item.getSize());
@@ -47,6 +47,7 @@ public class DBProductRepository extends DBRepository<Product>{
             stmt.setBoolean(9, item.isAvailable());
             stmt.setInt(10, item.getListedBy());
             stmt.setInt(11, item.getCategory());
+            stmt.setString(12, item.getImagePath());
             return stmt;
         }catch(SQLException e){
             throw new DatabaseException("Error preparing insert statement for product with id: "+ item.getId());
@@ -55,7 +56,7 @@ public class DBProductRepository extends DBRepository<Product>{
 
     public PreparedStatement getUpdateStatement(Connection c, Product item) throws DatabaseException {
         try {
-            PreparedStatement stmt = c.prepareStatement("UPDATE products SET name = ?, color = ?, size = ?, price = ?, brand = ?, cond = ?, nrOfViews = ?, nrOfLikes = ?, available = ?, listedBy = ?, category = ? WHERE id = ?");
+            PreparedStatement stmt = c.prepareStatement("UPDATE products SET name = ?, color = ?, size = ?, price = ?, brand = ?, cond = ?, nrOfViews = ?, nrOfLikes = ?, available = ?, listedBy = ?, category = ?, imagePath = ? WHERE id = ?");
             stmt.setString(1, item.getName());
             stmt.setString(2, item.getColor());
             stmt.setInt(3, item.getSize());
@@ -67,7 +68,8 @@ public class DBProductRepository extends DBRepository<Product>{
             stmt.setBoolean(9, item.isAvailable());
             stmt.setInt(10, item.getListedBy());
             stmt.setInt(11, item.getCategory());
-            stmt.setInt(12, item.getId());
+            stmt.setString(12, item.getImagePath());
+            stmt.setInt(13, item.getId());
             return stmt;
         }catch(SQLException e){
             throw new DatabaseException("Error preparing update statement for product with id: "+ item.getId());
@@ -93,6 +95,7 @@ public class DBProductRepository extends DBRepository<Product>{
                     resultSet.getInt("nrOfLikes"), resultSet.getInt("listedBy"));
             product.setCategory(resultSet.getInt("category"));
             product.setId(resultSet.getInt("id"));
+            product.setImagePath(resultSet.getString("imagePath"));
             return product;
         }catch(SQLException e){
             throw new DatabaseException("Error creating product entity from result set");
