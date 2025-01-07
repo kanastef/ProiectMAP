@@ -125,6 +125,7 @@ public class DisplayGUI {
 
 
 
+
     public void updateProductsWithOrderOptions(List<Product> products, Consumer<List<Product>> onFinishOrder) {
         panel.removeAll();
 
@@ -327,29 +328,18 @@ public class DisplayGUI {
                 options[0]
         );
 
-        switch (choice) {
-            case 0:
-                int confirmDelete = JOptionPane.showConfirmDialog(
-                        DisplayGUI.frame,
-                        "Are you sure you want to delete user: " + user.getId() + "?",
-                        "Confirm Delete",
-                        JOptionPane.YES_NO_OPTION
-                );
-                if (confirmDelete == JOptionPane.YES_OPTION) {
-                    if (adminActionListener != null) {
-                        adminActionListener.onDeleteUser(user.getId());
-                    }
-                }
-                break;
-
-            case 1:
+        if (choice == 0) {
+            int confirmDelete = JOptionPane.showConfirmDialog(
+                    DisplayGUI.frame,
+                    "Are you sure you want to delete user: " + user.getId() + "?",
+                    "Confirm Delete",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (confirmDelete == JOptionPane.YES_OPTION) {
                 if (adminActionListener != null) {
-                    adminActionListener.onManageReviews(user.getId());
+                    adminActionListener.onDeleteUser(user.getId());
                 }
-                break;
-
-            default:
-                break;
+            }
         }
     }
 
@@ -373,7 +363,7 @@ public class DisplayGUI {
 
     public interface AdminActionListener {
         void onDeleteUser(int userId);
-        void onManageReviews(int userId);
+
 
     }
 

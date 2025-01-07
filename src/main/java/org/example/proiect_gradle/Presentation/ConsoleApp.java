@@ -206,7 +206,7 @@ public class ConsoleApp {
         contentPanel.add(Box.createVerticalStrut(20));
 
         JScrollPane scrollPane = new JScrollPane(contentPanel);
-        scrollPane.setPreferredSize(new Dimension(800, 700)); // Wider size for dialog
+        scrollPane.setPreferredSize(new Dimension(800, 700));
         scrollPane.setMaximumSize(new Dimension(800, 700));
 
         int result = JOptionPane.showConfirmDialog(
@@ -1736,7 +1736,7 @@ public class ConsoleApp {
                 JLabel imageLabel;
                 if (product.getImagePath() != null) {
                     ImageIcon icon = new ImageIcon(product.getImagePath());
-                    Image img = icon.getImage().getScaledInstance(500, 400, Image.SCALE_SMOOTH);
+                    Image img = icon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
                     imageLabel = new JLabel(new ImageIcon(img));
                 } else {
                     imageLabel = new JLabel("No Image");
@@ -1814,66 +1814,74 @@ public class ConsoleApp {
         boolean browsing = true;
         List<User> displayedUsers = new ArrayList<>();
 
+
+        List<User> finalDisplayedUsers = displayedUsers;
+        displayGUI.setAdminActionListener(userId -> {
+
+            controller.deleteUser(username, password, userId);
+
+            finalDisplayedUsers.removeIf(user -> user.getId() == userId);
+
+
+            displayGUI.updateUsersAdmin(finalDisplayedUsers);
+            System.out.println("User  deleted successfully.");
+        });
+
         while (browsing) {
-            System.out.println("User Browsing Options: ");
+            System.out.println("User  Browsing Options: ");
             System.out.println("1. Sort Users");
             System.out.println("2. Filter Users");
             System.out.println("3. Delete User");
             System.out.println("4. Manage User Reviews");
             System.out.println("0. Go Back to Main Menu");
             System.out.print("Choose an option: ");
-
             int choice;
+            try {
+                if (!scanner.hasNextInt()) {
+                    throw new ValidationException("Invalid input. Please enter a valid number.");
+                }
+                choice = scanner.nextInt();
+                scanner.nextLine();
 
+                switch (choice) {
+                    case 1 -> {
+                        displayedUsers = sortUsers();
+                        displayGUI.updateUsersAdmin(displayedUsers);
+                        System.out.println("Sorted users displayed in GUI.");
+                    }
+                    case 2 -> {
+                        displayedUsers = filterUsers();
+                        displayGUI.updateUsersAdmin(displayedUsers);
+                        System.out.println("Filtered users displayed in GUI.");
+                    }
+                    case 3 -> {
+                        if (displayedUsers.isEmpty()) {
+                            System.out.println("No users available. Please sort or filter users first.");
+                        } else {
+                            displayGUI.updateUsersAdmin(displayedUsers);
+                            System.out.println("Please select a user from the GUI to proceed.");
+                        }
+                    }
+                    case 4 ->{
+                        if(displayedUsers.isEmpty()){
+                            System.out.println("No users available. Please sort or filter users first.");
+                        }else{
+                            manageReviews(username,password,displayedUsers);
+                        }
+                    }
 
-            while (true) {
-                try {
-                    String input = scanner.nextLine();
-                    if (!input.matches("\\d+")) {
-                        throw new ValidationException("Input must be a number.");
+                    case 0 -> {
+                        browsing = false;
+                        System.out.println("Returning to the Main Menu...");
                     }
-                    choice = Integer.parseInt(input);
-                    if (choice < 0 || choice > 4) {
-                        throw new ValidationException("Please select a number between 0 and 4.");
-                    }
-                    break;
-                } catch (ValidationException e) {
-                    System.out.println("Invalid input: " + e.getMessage());
-                    System.out.print("Please choose a valid option: ");
+                    default -> System.out.println("Invalid choice. Please enter a number between 0 and 4.");
                 }
-            }
-
-
-            switch (choice) {
-                case 1 -> {
-                    displayedUsers = sortUsers();
-                    System.out.println("Users sorted successfully.");
-                }
-                case 2 -> {
-                    displayedUsers = filterUsers();
-                    System.out.println("Users filtered successfully.");
-                }
-                case 3 -> {
-                    if (displayedUsers.isEmpty()) {
-                        System.out.println("No users to delete. Please sort or filter users first.");
-                    } else {
-                        deleteUser(username, password, displayedUsers);
-                    }
-                }
-                case 4 -> {
-                    if (displayedUsers.isEmpty()) {
-                        System.out.println("No users to manage reviews for. Please sort or filter users first.");
-                    } else {
-                        manageReviews(username, password, displayedUsers);
-                    }
-                }
-                case 0 -> {
-                    browsing = false;
-                    System.out.println("Returning to the Main Menu...");
-                }
-                default -> System.out.println("Unexpected error occurred. Please try again.");
+            } catch (ValidationException e) {
+                System.out.println("Error: " + e.getMessage());
+                scanner.nextLine();
             }
         }
+
     }
 
     private void manageReviews(String username, String password, List<User> displayedUsers) {
@@ -1882,234 +1890,66 @@ public class ConsoleApp {
             return;
         }
 
-        System.out.println("Manage User Reviews Options: ");
-        System.out.println("1. Delete Review Made by a User");
-        System.out.println("2. Delete Review Left for a User");
-
-        int choice;
-        while (true) {
-            try {
-                System.out.print("Choose an option: ");
-                String input = scanner.nextLine();
-                if (!input.matches("\\d+")) {
-                    throw new ValidationException("Invalid input: Please enter a valid number.");
-                }
-                choice = Integer.parseInt(input);
-                if (choice < 1 || choice > 2) {
-                    throw new ValidationException("Invalid choice: Please select 1 or 2.");
-                }
-                break;
-            } catch (ValidationException e) {
-                System.out.println(e.getMessage());
-            }
+        System.out.println("Available Users:");
+        for (User  user : displayedUsers) {
+            System.out.println("ID: " + user.getId() + ", Username: " + user.getUserName());
         }
 
-        switch (choice) {
-            case 1 -> deleteReviewMadeByUser(username, password, displayedUsers);
-            case 2 -> deleteReviewLeftForUser(username, password, displayedUsers);
-        }
-    }
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter the ID of the user you want to manage reviews for: ");
+        int userId = scanner.nextInt();
 
-
-    private void deleteReviewLeftForUser(String username, String password, List<User> displayedUsers) {
-        if (displayedUsers.isEmpty()) {
-            System.out.println("No users to select. Please search or filter first.");
-            return;
-        }
-
-        int userId;
-        while (true) {
-            try {
-                System.out.println("Select a User to see reviews left for them:");
-                for (int i = 0; i < displayedUsers.size(); i++) {
-                    System.out.println((i + 1) + ". " + displayedUsers.get(i));
-                }
-                System.out.print("Enter the ID of the user to manage: ");
-                String input = scanner.nextLine();
-                if (!input.matches("\\d+")) {
-                    throw new ValidationException("Invalid input: Please enter a valid user ID.");
-                }
-                userId = Integer.parseInt(input);
-                int finalUserId = userId;
-                if (displayedUsers.stream().map(User::getId).noneMatch(id -> id == finalUserId)) {
-                    throw new ValidationException("Invalid ID: Please select a user ID from the list.");
-                }
-                break;
-            } catch (ValidationException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-        List<Review> reviewsLeftForUser = controller.displayReviewsLeftForUser(userId);
-        if (reviewsLeftForUser.isEmpty()) {
-            System.out.println("No reviews found left for this user.");
-            return;
-        }
-
-        System.out.println("Reviews left for this user:");
-        for (Review review : reviewsLeftForUser) {
-            System.out.println(review);
-        }
-
-        int reviewId;
-        while (true) {
-            try {
-                System.out.print("Enter Review ID to delete: ");
-                String input = scanner.nextLine();
-                if (!input.matches("\\d+")) {
-                    throw new ValidationException("Invalid input: Please enter a valid review ID.");
-                }
-                reviewId = Integer.parseInt(input);
-                int finalReviewId = reviewId;
-                if (reviewsLeftForUser.stream().map(Review::getId).noneMatch(id -> id == finalReviewId)) {
-                    throw new ValidationException("Invalid Review ID: Please select a review ID from the list.");
-                }
-                break;
-            } catch (ValidationException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-        boolean success = controller.deleteReviewAdmin(username, password, reviewId);
-        if (success) {
-            System.out.println("Review deleted successfully.");
-        } else {
-            System.out.println("Failed to delete review. Please check the Review ID and try again.");
-        }
-    }
-
-
-    private void deleteReviewMadeByUser(String username, String password, List<User> displayedUsers) {
-        if (displayedUsers.isEmpty()) {
-            System.out.println("No users to select. Please search or filter first.");
-            return;
-        }
-
-        int userId;
-        while (true) {
-            try {
-                System.out.println("Select a User to see reviews they have made:");
-                for (int i = 0; i < displayedUsers.size(); i++) {
-                    System.out.println((i + 1) + ". " + displayedUsers.get(i));
-                }
-                System.out.print("Enter the ID of the user to manage: ");
-                String input = scanner.nextLine();
-                if (!input.matches("\\d+")) {
-                    throw new ValidationException("Invalid input: Please enter a valid user ID.");
-                }
-                userId = Integer.parseInt(input);
-                int finalUserId1 = userId;
-                if (displayedUsers.stream().map(User::getId).noneMatch(id -> id == finalUserId1)) {
-                    throw new ValidationException("Invalid ID: Please select a user ID from the list.");
-                }
-                break;
-            } catch (ValidationException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-        int finalUserId = userId;
-        User selectedUser = displayedUsers.stream()
-                .filter(user -> user.getId() == finalUserId)
+        User selectedUser  = displayedUsers.stream()
+                .filter(user -> user.getId() == userId)
                 .findFirst()
                 .orElse(null);
 
-        if (selectedUser == null) {
-            System.out.println("Unexpected error: Could not find the selected user.");
+        if (selectedUser  == null) {
+            System.out.println("Invalid user ID. Please try again.");
             return;
         }
 
-        List<Review> reviewsLeftByUser = controller.displayReviewsLeftByUser(selectedUser.getUserName(), selectedUser.getPassword());
-        if (reviewsLeftByUser.isEmpty()) {
-            System.out.println("No reviews made by this user.");
-            return;
-        }
+        System.out.println("Select the type of reviews to manage:");
+        System.out.println("1. Reviews Left for User");
+        System.out.println("2. Reviews Left by User");
+        int choice = scanner.nextInt();
 
-        System.out.println("Reviews made by this user:");
-        for (Review review : reviewsLeftByUser) {
-            System.out.println(review);
-        }
-
-        int reviewId;
-        while (true) {
-            try {
-                System.out.print("Enter Review ID to delete: ");
-                String input = scanner.nextLine();
-                if (!input.matches("\\d+")) {
-                    throw new ValidationException("Invalid input: Please enter a valid review ID.");
-                }
-                reviewId = Integer.parseInt(input);
-                int finalReviewId = reviewId;
-                if (reviewsLeftByUser.stream().map(Review::getId).noneMatch(id -> id == finalReviewId)) {
-                    throw new ValidationException("Invalid Review ID: Please select a review ID from the list.");
-                }
-                break;
-            } catch (ValidationException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-        boolean success = controller.deleteReviewAdmin(username, password, reviewId);
-        if (success) {
-            System.out.println("Review deleted successfully.");
+        List<Review> reviews;
+        if (choice == 1) {
+            reviews = controller.displayReviewsLeftForUser (userId);
+        } else if (choice == 2) {
+            reviews = controller.displayReviewsLeftByUser (username, password);
         } else {
-            System.out.println("Failed to delete review. Please check the Review ID and try again.");
-        }
-    }
-
-    private void deleteUser(String username, String password, List<User> displayedUsers) {
-        if (displayedUsers.isEmpty()) {
-            System.out.println("No users to select. Please search or filter first.");
+            System.out.println("Invalid choice. Please try again.");
             return;
         }
 
-        int userId;
-        while (true) {
-            try {
-                System.out.println("Displayed Users:");
-                for (User user : displayedUsers) {
-                    System.out.println("ID: " + user.getId() + ", Username: " + user.getUserName());
-                }
-                System.out.print("Enter User ID to delete: ");
-                String input = scanner.nextLine();
-                if (!input.matches("\\d+")) {
-                    throw new ValidationException("Invalid input: Please enter a valid user ID.");
-                }
-                userId = Integer.parseInt(input);
-                int finalUserId = userId;
-                if (displayedUsers.stream().map(User::getId).noneMatch(id -> id == finalUserId)) {
-                    throw new ValidationException("Invalid ID: Please select a user ID from the list.");
-                }
-                break;
-            } catch (ValidationException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-        String confirmation;
-        while (true) {
-            try {
-                System.out.print("Are you sure you want to delete this account? (yes/no): ");
-                confirmation = scanner.nextLine().trim().toLowerCase();
-                if (!confirmation.equals("yes") && !confirmation.equals("no")) {
-                    throw new ValidationException("Invalid input: Please enter 'yes' or 'no'.");
-                }
-                break;
-            } catch (ValidationException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-
-        if (confirmation.equals("yes")) {
-            boolean success = controller.deleteUser(username, password, userId);
-            if (success) {
-                System.out.println("Account deleted successfully.");
-            } else {
-                System.out.println("Failed to delete user. Please check the User ID and try again.");
-            }
+        if (reviews.isEmpty()) {
+            System.out.println("No reviews found for user ID: " + userId);
         } else {
-            System.out.println("Account deletion canceled.");
+            for (Review review : reviews) {
+                System.out.println("Review ID: " + review.getId());
+                System.out.println("Review Details: " + review);
+
+                // Prompt for deletion
+                while (true) {
+                    System.out.print("Do you want to delete this review? (yes/no): ");
+                    String deleteChoice = scanner.next();
+
+                    if (deleteChoice.equalsIgnoreCase("yes")) {
+                        controller.deleteReview(username, password, review.getId());
+                        System.out.println("Review deleted successfully.");
+                    } else if (deleteChoice.equalsIgnoreCase("no")) {
+                        System.out.println("Returning to the review menu...");
+                        return;
+                    } else {
+                        System.out.println("Invalid choice. Please enter 'yes' or 'no'.");
+                    }
+                }
+            }
         }
+
+        scanner.close();
     }
 
 
@@ -2118,122 +1958,185 @@ public class ConsoleApp {
         boolean browsing = true;
         List<Product> products = new ArrayList<>();
 
+        List<Product> finalProducts1 = products;
+        displayGUI.setProductActionListener(product -> {
+            System.out.println("Product selected: " + product.getName());
+
+            String[] options = {"Change Category", "Delete Product"};
+            int actionChoice = JOptionPane.showOptionDialog(null,
+                    "Choose Action for Product:",
+                    "Product Action",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.INFORMATION_MESSAGE,
+                    null,
+                    options,
+                    options[0]);
+
+            if (actionChoice == 0) {
+                changeProductCategory(product.getId(), username, password);
+            } else if (actionChoice == 1) {
+                deleteProductByAdmin(product.getId(), username, password);
+                //finalProducts1.removeIf(p -> p.getId() == product.getId());
+                //displayGUI.updateProducts(finalProducts1);
+            } else {
+                System.out.println("No action selected.");
+            }
+        });
+
         while (browsing) {
             System.out.println("Product Browsing Options: ");
             System.out.println("1. Sort Products");
             System.out.println("2. Filter Products");
-            System.out.println("3. Select Product for Action (change category/delete product)");
-            System.out.println("4. See Category Sales Ranking");
-            System.out.println("0. Go Back to Main Menu");
+            System.out.println("3. Select Product from GUI");
+            System.out.println("4. Refresh ");
+            System.out.println("5. See Category Sales Ranking");
+            System.out.println("0. Go Back to Repo.Main Menu");
+            System.out.print("Choose an option or select a product via GUI: ");
 
-            int choice = -1;
+            int choice;
             while (true) {
                 try {
-                    System.out.print("Choose an option: ");
                     String input = scanner.nextLine();
                     if (!input.matches("\\d+")) {
-                        throw new ValidationException("Invalid input: Please enter a valid number.");
+                        throw new ValidationException("Please enter a valid number.");
                     }
                     choice = Integer.parseInt(input);
-                    if (choice < 0 || choice > 4) {
-                        throw new ValidationException("Invalid choice: Please select a number between 0 and 4.");
+                    if (choice < 0 || choice > 5) {
+                        throw new ValidationException("Please enter a number between 0 and 5.");
                     }
                     break;
                 } catch (ValidationException e) {
-                    System.out.println(e.getMessage());
+                    System.out.println("Invalid input: " + e.getMessage());
+                    System.out.print("Please choose a valid option: ");
                 }
             }
 
+            List<Product> finalProducts = products;
             switch (choice) {
-                case 1 -> products = sortProducts();
-                case 2 -> products = filterProducts();
-                case 3 -> selectProductActionAdmin(products, username, password);
-                case 4 -> System.out.println(controller.seeCategorySales());
-                case 0 -> browsing = false;
+                case 1 -> {
+                    products = sortProducts();
+
+                }
+                case 2 -> {
+                    products = filterProducts();
+
+                }
+                case 3 -> {
+                    displayGUI.setProductActionListener(null);
+                    displayGUI.updateProducts(products);
+
+                    displayGUI.setProductActionListener(product -> {
+                        System.out.println("Product selected: " + product.getName());
+                        String[] options = {"Change Category", "Delete Product"};
+                        int actionChoice = JOptionPane.showOptionDialog(null,
+                                "Choose Action for Product:",
+                                "Product Action",
+                                JOptionPane.DEFAULT_OPTION,
+                                JOptionPane.INFORMATION_MESSAGE,
+                                null,
+                                options,
+                                options[0]);
+
+                        if (actionChoice == 0) {
+                            changeProductCategory(product.getId(), username, password);
+                        } else if (actionChoice == 1) {
+                            deleteProductByAdmin(product.getId(), username, password);
+                            finalProducts.removeIf(p -> p.getId() == product.getId());
+                            displayGUI.updateProducts(finalProducts);
+                        } else {
+                            System.out.println("No action selected.");
+                        }
+                    });
+                }
+                case 4 -> {
+
+                    products = controller.sortProducts(1,1);
+                    displayGUI.updateProducts(products);
+
+                }
+
+                case 5 ->{
+                    showCategoriesByIncome();
+                }
+
+                case 0 -> {
+                    browsing = false;
+                    displayGUI.showWelcomeMessage();
+                }
+            }
+
+            if (!products.isEmpty()) {
+                displayGUI.updateProducts(products);
             }
         }
     }
 
 
-    private void selectProductActionAdmin(List<Product> products, String username, String password) {
-        if (products.isEmpty()) {
-            System.out.println("No products to select. Please search or filter products first.");
+    private void showCategoriesByIncome() {
+        Map<String, Double> sortedIncomeByCategory = controller.seeCategorySales();
+
+        if (sortedIncomeByCategory.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No income data available.", "Category Sales", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
-        boolean validProductId = false;
-        while (!validProductId) {
-            try {
-                System.out.print("Enter Product ID to select for action: ");
-                String input = scanner.nextLine();
-                if (!input.matches("\\d+")) {
-                    throw new ValidationException("Invalid input. Please enter a valid product ID.");
-                }
-                int productId = Integer.parseInt(input);
+        String[] columnNames = {"Category", "Sales"};
+        Object[][] data = new Object[sortedIncomeByCategory.size()][2];
+        int index = 0;
 
-                if (products.stream().map(Product::getId).anyMatch(x -> x.equals(productId))) {
-                    validProductId = true;
-                    System.out.println("Choose Action for Product:");
-                    System.out.println("1. Change Product Category");
-                    System.out.println("2. Delete Product");
-                    System.out.print("Enter your choice: ");
-
-                    int actionChoice;
-                    while (true) {
-                        try {
-                            String actionInput = scanner.nextLine();
-                            if (!actionInput.matches("\\d+")) {
-                                throw new ValidationException("Invalid input. Please enter a valid action choice.");
-                            }
-                            actionChoice = Integer.parseInt(actionInput);
-                            if (actionChoice == 1 || actionChoice == 2) {
-                                break;
-                            } else {
-                                throw new ValidationException("Invalid choice. Please choose either 1 or 2.");
-                            }
-                        } catch (ValidationException e) {
-                            System.out.println(e.getMessage());
-                        }
-                    }
-
-                    switch (actionChoice) {
-                        case 1 -> changeProductCategory(productId, username, password);
-                        case 2 -> deleteProduct(productId, username, password);
-                    }
-                } else {
-                    System.out.println("Invalid Product ID. Please try again.");
-                }
-            } catch (ValidationException e) {
-                System.out.println("Error: " + e.getMessage());
-                scanner.nextLine();
-            }
+        for (Map.Entry<String, Double> entry : sortedIncomeByCategory.entrySet()) {
+            data[index][0] = entry.getKey();
+            data[index][1] = String.format("$%.2f", entry.getValue());
+            index++;
         }
+
+        JTable table = new JTable(data, columnNames);
+        table.setFillsViewportHeight(true);
+        table.setRowHeight(30);
+        table.setFont(new Font("Arial", Font.PLAIN, 14));
+        table.getColumnModel().getColumn(1).setPreferredWidth(100);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Category Sales"));
+        scrollPane.setPreferredSize(new Dimension(500, 400));
+
+        JDialog dialog = new JDialog((Frame) null, "Category Sales", true);
+        dialog.getContentPane().add(scrollPane);
+        dialog.pack();
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int dialogWidth = dialog.getWidth();
+        int dialogHeight = dialog.getHeight();
+        int x = screenSize.width - dialogWidth - 300;
+        int y = (screenSize.height - dialogHeight) / 2;
+        dialog.setLocation(x, y);
+
+        dialog.setVisible(true);
     }
 
-    private void deleteProduct(int productId, String username, String password) {
-        String confirmation;
-        while (true) {
-            try {
-                System.out.print("Are you sure you want to delete this product? (yes/no): ");
-                confirmation = scanner.nextLine().trim().toLowerCase();
-                if (!confirmation.equals("yes") && !confirmation.equals("no")) {
-                    throw new ValidationException("Invalid input. Please enter 'yes' or 'no'.");
-                }
-                break;
-            } catch (ValidationException e) {
-                System.out.println("Error: " + e.getMessage());
+    private void deleteProductByAdmin(int productId, String username, String password) {
+
+        int response = JOptionPane.showConfirmDialog(
+                null,
+                "Are you sure you want to delete this product?",
+                "Confirm Deletion",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (response == JOptionPane.OK_OPTION) {
+            boolean success = controller.deleteProduct(username, password, productId);
+            if (success) {
+                JOptionPane.showMessageDialog(null, "Product deleted successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Failed to delete product.", "Error", JOptionPane.ERROR_MESSAGE);
             }
+        } else {
+            JOptionPane.showMessageDialog(null, "Product deletion canceled.", "Canceled", JOptionPane.INFORMATION_MESSAGE);
         }
 
-        if (confirmation.equals("yes")) {
-            boolean success = controller.deleteProduct(username, password, productId);
-            if (success)
-                System.out.println("Product deleted successfully.");
-            else
-                System.out.println("Failed to delete product.");
-        } else {
-            System.out.println("Product deletion canceled.");
-        }
+
     }
 
     private void seeVisitorActivity(String username, String password) {
@@ -2245,44 +2148,45 @@ public class ConsoleApp {
     }
 
     private void changeProductCategory(int productId, String username, String password) {
-        boolean validCategory = false;
-        while (!validCategory) {
-            try {
-                System.out.println("Available Categories:");
-                List<Category> categories = controller.getCategories();
-                for (Category category : categories) {
-                    System.out.println(category);
-                }
-                System.out.print("Choose a new category for the product: ");
-                int categoryChoice;
-                while (true) {
-                    try {
-                        if (!scanner.hasNextInt()) {
-                            throw new ValidationException("Invalid input. Please enter a valid category ID.");
-                        }
-                        categoryChoice = scanner.nextInt();
-                        scanner.nextLine();
-                        int finalCategoryChoice = categoryChoice;
-                        if (categories.stream().map(Category::getId).noneMatch(x -> x.equals(finalCategoryChoice))) {
-                            throw new ValidationException("Invalid category ID. Please choose a valid category.");
-                        }
-                        break;
-                    } catch (ValidationException e) {
-                        System.out.println("Error: " + e.getMessage());
-                        scanner.nextLine();
-                    }
-                }
+        JFrame frame = new JFrame("Select New Category");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(700, 400);
+        frame.setLayout(new FlowLayout());
 
-                boolean success = controller.changeCategory(productId, categoryChoice, username, password);
-                if (success)
-                    System.out.println("Product category updated successfully.");
-                else
-                    System.out.println("Failed to change category.");
-                validCategory = true;
-            } catch (ValidationException e) {
-                System.out.println("Error: " + e.getMessage());
-            }
+        JLabel label = new JLabel("Choose a new category for the product:");
+        label.setFont(new Font("Arial", Font.BOLD, 16));
+
+        JComboBox<Category> categoryComboBox = new JComboBox<>();
+        List<Category> categories = controller.getCategories();
+        for (Category category : categories) {
+            categoryComboBox.addItem(category);
         }
+
+        JButton confirmButton = new JButton("Confirm");
+        confirmButton.addActionListener(e -> {
+            int categoryId = ((Category) Objects.requireNonNull(categoryComboBox.getSelectedItem())).getId();
+
+            boolean success = controller.changeCategory(productId, categoryId, username, password);
+            if (success) {
+                JOptionPane.showMessageDialog(frame, "Product category updated successfully.");
+            } else {
+                JOptionPane.showMessageDialog(frame, "Failed to change category.");
+            }
+            frame.dispose();
+        });
+
+        frame.add(label);
+        frame.add(categoryComboBox);
+        frame.add(confirmButton);
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = screenSize.width - frame.getWidth();
+        int y = (screenSize.height - frame.getHeight()) / 2;
+        frame.setLocation(x, y);
+
+
+
+        frame.setVisible(true);
     }
 }
 
