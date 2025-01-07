@@ -576,7 +576,7 @@ public class UserService extends VisitorService {
      * @return {@code true} if the product is removed successfully; {@code false} otherwise.
      */
 
-    public boolean removeFromFavourites(String userName,String password, int productId){
+    public boolean removeFromFavourites(String userName, String password, int productId) {
         try {
             if (authenticate(userName, password)) {
                 User user = findByCriteriaHelper(userName, password);
@@ -585,22 +585,38 @@ public class UserService extends VisitorService {
                 if (product == null) {
                     throw new EntityNotFoundException("Product with ID " + productId + " not found.");
                 }
-                List<Integer> favs = user.getFavourites();
-                if (user.getFavourites().contains(productId)) {
-                    user.getFavourites().remove((Integer)productId);
-                    userRepo.update(user);
-                    int newNrOfLikes = product.getNrLikes() - 1;
-                    product.setNrLikes(newNrOfLikes);
-                    productRepo.update(product);
-                    return true;
+
+                List<Integer> favourites = user.getFavourites();
+
+                if (favourites.isEmpty()) {
+                    System.out.println("The favourites list is empty.");
+                    return false;
                 }
 
-            }
-        }catch (BusinessLogicException e) {
-            System.err.println("Error removing from favorites: " + e.getMessage());
-        }
-        return false;
+                List<Integer> updatedFavourites = new ArrayList<>();
+                boolean productRemoved = false;
+                for (int id : favourites) {
+                    if (id != productId) {
+                        updatedFavourites.add(id);
+                    } else {
+                        productRemoved = true;
+                    }
+                }
 
+                if (productRemoved) {
+                    favourites.clear();
+                    favourites.addAll(updatedFavourites);
+                    userRepo.update(user);
+                    return true;
+                } else {
+                    System.out.println("Product ID " + productId + " not found in favourites.");
+                }
+            }
+        } catch (BusinessLogicException e) {
+            System.err.println("Error removing from favourites: " + e.getMessage());
+        }
+
+        return false;
     }
 
 
