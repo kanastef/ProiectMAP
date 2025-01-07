@@ -13,10 +13,7 @@ import org.example.proiect_gradle.Repository.FileRepository.*;
 import org.example.proiect_gradle.Repository.DBRepository.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class ApplicationTests {
@@ -50,14 +47,14 @@ public class ApplicationTests {
     ReviewFileRepository reviewFileRepository = new ReviewFileRepository(reviewsFilename);
     AdminFileRepository adminFileRepository = new AdminFileRepository(adminsFilename);
 
-//    DBAdminRepository dbAdminRepository = new DBAdminRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//    DBUserRepository dbUserRepository = new DBUserRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//    DBProductRepository dbProductRepository = new DBProductRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//    DBOfferRepository dbOfferRepository = new DBOfferRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//    DBOrderRepository dbOrderRepository = new DBOrderRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//    DBCategoryRepository dbCategoryRepository = new DBCategoryRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//    DBReviewRepository dbReviewRepository = new DBReviewRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
-//    DBVisitorRepository dbVisitorRepository = new DBVisitorRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+    DBAdminRepository dbAdminRepository = new DBAdminRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+    DBUserRepository dbUserRepository = new DBUserRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+    DBProductRepository dbProductRepository = new DBProductRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+    DBOfferRepository dbOfferRepository = new DBOfferRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+    DBOrderRepository dbOrderRepository = new DBOrderRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+    DBCategoryRepository dbCategoryRepository = new DBCategoryRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+    DBReviewRepository dbReviewRepository = new DBReviewRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
+    DBVisitorRepository dbVisitorRepository = new DBVisitorRepository("jdbc:mysql://localhost:3306/marketplace_db", "root", "ana_db_505051");
 
     VisitorService visitorIMService= new VisitorService(userIMRepository,productIMRepository,reviewIMRepository,categoryIMRepository);
     UserService userIMService=new UserService(userIMRepository,productIMRepository,reviewIMRepository,categoryIMRepository,orderIMRepository,offerIMRepository);
@@ -68,12 +65,143 @@ public class ApplicationTests {
     AdminService adminFileService=new AdminService(userFileRepository,productFileRepository,reviewFileRepository,adminFileRepository,categoryFileRepository,orderFileRepository,visitorFileRepository);
 
 
-//    VisitorService visitorDBService = new VisitorService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository);
-//    UserService userDBService = new UserService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository, dbOrderRepository, dbOfferRepository);
-//    AdminService adminDBService = new AdminService(dbUserRepository, dbProductRepository, dbReviewRepository, dbAdminRepository, dbCategoryRepository, dbOrderRepository);
-////    Controller controller = new Controller(adminService, userService, visitorService);
+    VisitorService visitorDBService = new VisitorService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository);
+    UserService userDBService = new UserService(dbUserRepository, dbProductRepository, dbReviewRepository, dbCategoryRepository, dbOrderRepository, dbOfferRepository);
+    AdminService adminDBService = new AdminService(dbUserRepository, dbProductRepository, dbReviewRepository, dbAdminRepository, dbCategoryRepository, dbOrderRepository, dbVisitorRepository);
+//    Controller controller = new Controller(adminService, userService, visitorService);
 //    ConsoleApp console = new ConsoleApp(controller);
 
+    @Test
+    public void populateAllRepositories() {
+        // Admin Repositories
+        for (int i = 1; i <= 5; i++) {
+            Admin admin = new Admin("admin" + i, "password" + i, "admin" + i + "@example.com", "123456789" + i);
+            adminFileRepository.create(admin);
+            dbAdminRepository.create(admin);
+        }
+
+        // Category Repositories
+        Category categoryTops = new Category(CategoryName.TOPS);
+        Category categoryDresses= new Category(CategoryName.DRESSES);
+        Category categoryShoes = new Category(CategoryName.FOOTWEAR);
+        Category categoryAccessories = new Category(CategoryName.ACCESSORIES);
+        Category categoryOuterwear = new Category(CategoryName.OUTERWEAR);
+        Category categoryBottoms=new Category(CategoryName.BOTTOMS);
+
+        categoryFileRepository.create(categoryTops);
+        categoryFileRepository.create(categoryDresses);
+        categoryFileRepository.create(categoryShoes);
+        categoryFileRepository.create(categoryAccessories);
+        categoryFileRepository.create(categoryOuterwear);
+        categoryFileRepository.create(categoryBottoms);
+
+        dbCategoryRepository.create(categoryTops);
+        dbCategoryRepository.create(categoryDresses);
+        dbCategoryRepository.create(categoryShoes);
+        dbCategoryRepository.create(categoryAccessories);
+        dbCategoryRepository.create(categoryOuterwear);
+        dbCategoryRepository.create(categoryBottoms);
+
+        // Visitor Repositories
+        for (int i = 1; i <= 5; i++) {
+            Visitor visitor = new Visitor(LocalDateTime.now().minusDays(i));
+            visitorFileRepository.create(visitor);
+            dbVisitorRepository.create(visitor);
+        }
+
+        // User Repositories
+        for (int i = 1; i <= 5; i++) {
+            User user = new User("user" + i, "pass" + i, "user" + i + "@example.com", "123123123" + i, i * 1.5);
+            userFileRepository.create(user);
+            dbUserRepository.create(user);
+            userFileService.listProduct(user.getUserName(), user.getPassword(), i,"Product" + i,
+                    "Color" + i,
+                    40 + i,
+                    10.00 + i,
+                    "Brand" + i,
+                    "New",
+                    i * 10,
+                    i * 5);
+            userDBService.listProduct(user.getUserName(), user.getPassword(), i,"Product" + i,
+                    "Color" + i,
+                    40 + i,
+                    10.00 + i,
+                    "Brand" + i,
+                    "New",
+                    i * 10,
+                    i * 5);
+        }
+
+        Order order1 = new Order(
+                Arrays.asList(1, 2),
+                "Status " + 1,
+                "Address " + 1,
+                1,
+                2
+        );
+        order1.setTotalPrice(20);
+        orderFileRepository.create(order1);
+        dbOrderRepository.create(order1);
+
+        Order order2 = new Order(
+                Arrays.asList(3, 4, 5),
+                "Status " + 2,
+                "Address " + 2,
+                3,
+                4
+        );
+        order2.setTotalPrice(30);
+        orderFileRepository.create(order2);
+        dbOrderRepository.create(order2);
+
+        Review review1 = new Review(
+                3,
+                "Review message " + 1,
+                1,
+                2
+        );
+        reviewFileRepository.create(review1);
+        dbReviewRepository.create(review1);
+
+        Review review2 = new Review(
+                4.5,
+                "Review message " + 2,
+                3,
+                4
+        );
+        reviewFileRepository.create(review2);
+        dbReviewRepository.create(review2);
+
+        // Offer Repositories
+        for (int i = 2; i < 5; i++) {
+            Offer offer = new Offer(
+                    "Offer message " + i,
+                    20.00 + i,
+                    i,
+                    i ,
+                    i - 1
+            );
+            offerFileRepository.create(offer);
+            dbOfferRepository.create(offer);
+        }
+
+        System.out.println("All repositories populated with sample data.");
+    }
+
+    @Test
+    public void deleteAllDataFromFiles() {
+        // Clear File Repositories
+        FileRepository.clearFile(userFilename);
+        FileRepository.clearFile(productFilename);
+        FileRepository.clearFile(categoriesFilename);
+        FileRepository.clearFile(offersFilename);
+        FileRepository.clearFile(orderFilename);
+        FileRepository.clearFile(reviewsFilename);
+        FileRepository.clearFile(adminsFilename);
+        FileRepository.clearFile(visitorsFilename);
+        FileRepository.clearFile(likedProducts);
+        FileRepository.clearFile(orderedProducts);
+    }
 
     @Test
     public void testCrudUser() {

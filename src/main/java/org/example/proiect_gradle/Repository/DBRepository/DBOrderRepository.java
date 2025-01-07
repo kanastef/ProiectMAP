@@ -88,21 +88,20 @@ public class DBOrderRepository extends DBRepository<Order>{
         }
     }
 
-    public PreparedStatement insertOrderedProducts(Connection c, int orderId, List<Integer> productIds) throws DatabaseException {
-        try {
-            PreparedStatement stmt = c.prepareStatement("INSERT INTO OrderedProducts(orderId, productId) VALUES(?, ?)");
-
+    public void insertOrderedProducts(Connection c, int orderId, List<Integer> productIds) throws DatabaseException {
+        String sql = "INSERT INTO OrderedProducts(orderId, productId) VALUES(?, ?)";
+        try (PreparedStatement stmt = c.prepareStatement(sql)) {
             for (int productId : productIds) {
                 stmt.setInt(1, orderId);
                 stmt.setInt(2, productId);
                 stmt.addBatch();
             }
-            stmt.executeBatch();
-            return stmt;
-        }catch(SQLException e){
+            stmt.executeBatch(); // Execute batch only once
+        } catch (SQLException e) {
             throw new DatabaseException("Error inserting ordered products for order with id: " + orderId);
         }
     }
+
 
     public PreparedStatement getUpdateStatement(Connection c, Order item) throws DatabaseException {
         try {
@@ -172,22 +171,30 @@ public class DBOrderRepository extends DBRepository<Order>{
 
     @Override
     public void create(Order entity) {
-        if(entity==null)
+        if (entity == null) {
             throw new IllegalArgumentException("ENTITY CANNOT BE NULL");
-        try{
+        }
+
+        try {
+            // Insert Order and retrieve the generated ID
             PreparedStatement statement1 = getInsertStatement(connection, entity);
-            String strStatement = statement1.toString().split("Statement:")[1];
-            statement1.executeUpdate(strStatement, PreparedStatement.RETURN_GENERATED_KEYS);
+            statement1.executeUpdate();
+
             ResultSet rs = statement1.getGeneratedKeys();
-            rs.next();
-            int id = rs.getInt(1);
-            entity.setId(id);
-            PreparedStatement statement2 = insertOrderedProducts(connection, entity.getId(), entity.getProducts());
-            String strStatement2 = statement2.toString().split("Statement:")[1];
-            statement2.executeUpdate(strStatement2, PreparedStatement.RETURN_GENERATED_KEYS);
-        } catch (Exception e){
-            throw new IllegalArgumentException("ERROR CREATING ORDER");
+            if (rs.next()) {
+                int id = rs.getInt(1);
+                entity.setId(id);
+            } else {
+                throw new IllegalArgumentException("Failed to retrieve the generated key for the order.");
+            }
+
+            // Insert Ordered Products using the generated Order ID
+            insertOrderedProducts(connection, entity.getId(), entity.getProducts());
+
+        } catch (SQLException e) {
+            throw new IllegalArgumentException("ERROR CREATING ORDER", e);
         }
     }
+
 
 }

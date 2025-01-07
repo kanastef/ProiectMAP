@@ -295,10 +295,10 @@ public class DisplayGUI {
                 userPanel.add(details, BorderLayout.CENTER);
 
                 JButton selectButton = new JButton("Select");
-                selectButton.addActionListener(e -> showAdminOptions(user)); // Call the method to show admin options
+                selectButton.addActionListener(e -> showAdminOptions(user));
                 userPanel.add(selectButton, BorderLayout.EAST);
 
-                userPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add some padding
+                userPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                 panel.add(userPanel);
             }
         }
@@ -357,7 +357,7 @@ public class DisplayGUI {
 
 
     public void closeGUI() {
-        frame.dispose(); // Close the JFrame
+        frame.dispose();
     }
 
     public interface ProductActionListener {
@@ -381,7 +381,6 @@ public class DisplayGUI {
 
 
     public void refreshWelcomePage() {
-        // Logic to return to the welcome page
         panel.removeAll();
         panel.setLayout(new BorderLayout());
         panel.add(welcomeLabel, BorderLayout.CENTER);

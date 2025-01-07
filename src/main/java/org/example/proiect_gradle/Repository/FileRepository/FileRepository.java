@@ -172,4 +172,13 @@ public abstract class FileRepository<T extends Identifiable> extends IMRepositor
     protected abstract String convertObjectToString(T object);
 
     protected abstract T createObjectFromString(String line);
+
+    public static void clearFile(String filePath) {
+        try (FileWriter fileWriter = new FileWriter(filePath, false)) {
+
+        } catch (IOException e) {
+            System.err.println("Error clearing file: " + filePath);
+            e.printStackTrace();
+        }
+    }
 }

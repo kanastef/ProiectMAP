@@ -1,0 +1,5 @@
+1,1,Product1,Color1,41,11.0,Brand1,New,10,5,1,true
+2,2,Product2,Color2,42,12.0,Brand2,New,20,10,2,true
+3,3,Product3,Color3,43,13.0,Brand3,New,30,15,3,true
+4,4,Product4,Color4,44,14.0,Brand4,New,40,20,4,true
+5,5,Product5,Color5,45,15.0,Brand5,New,50,25,5,true
