@@ -612,17 +612,14 @@ public class ConsoleApp {
             offerPannel.add(new JLabel("No offers found. Please try again."));
         } else {
             for (Offer offer : offers) {
-                // Create a new panel for each offer
                 JPanel offerItemPanel = new JPanel();
                 offerItemPanel.setLayout(new BorderLayout());
 
-                // Display offer details
                 JTextArea offerTextArea = new JTextArea(offer.toString());
                 offerTextArea.setEditable(false);
                 offerTextArea.setMargin(new Insets(10, 10, 10, 10));
                 offerItemPanel.add(offerTextArea, BorderLayout.CENTER);
 
-                // Add "Accept Offer" button
                 JButton acceptButton = new JButton("Accept Offer");
                 acceptButton.addActionListener(e -> {
                     int confirmation = JOptionPane.showConfirmDialog(DisplayGUI.frame,
@@ -646,7 +643,6 @@ public class ConsoleApp {
                 });
                 offerItemPanel.add(acceptButton, BorderLayout.EAST);
 
-                // Add the offer item panel to the main offer panel
                 offerPannel.add(offerItemPanel);
             }
         }
