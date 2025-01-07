@@ -383,7 +383,7 @@ public class ConsoleApp {
                 case 3 -> viewMyListings(username, password);
                 case 4 -> viewMyOrders(username, password);
                 case 5 -> viewReceivedOrders(username, password);
-                case 6 -> viewOffers(username, password);
+                case 6 -> viewReceivedOffers(username, password);
                 case 7 -> viewSentOffers(username, password);
                 case 8 -> viewMyReviews(username, password);
                 case 9 -> viewLikes(username, password);
@@ -572,82 +572,89 @@ public class ConsoleApp {
 
     private void viewSentOffers(String username, String password) {
         List<Offer> madeOffers = controller.getMadeOffers(username, password);
+
+        JPanel offersPannel = new JPanel();
+        offersPannel.setLayout(new BoxLayout(offersPannel, BoxLayout.Y_AXIS));
+
         if (madeOffers.isEmpty()) {
-            System.out.println("No sent offers found.");
-        }
-        else {
+            offersPannel.add(new JLabel("No offers found. Please try again."));
+        } else {
             for (Offer offer : madeOffers) {
-                System.out.println(offer);
+                JPanel offerPannel = new JPanel();
+                offerPannel.setLayout(new BorderLayout());
+
+
+                JTextArea reviewTextArea = new JTextArea(offer.toString());
+                reviewTextArea.setEditable(false);
+                reviewTextArea.setMargin(new Insets(10, 10, 10, 10));
+                offerPannel.add(reviewTextArea, BorderLayout.CENTER);
+
+
+                offersPannel.add(offerPannel);
             }
         }
+
+
+        JScrollPane scrollPane = new JScrollPane(offersPannel);
+        scrollPane.setPreferredSize(new Dimension(600, 500)); // Set preferred size for the dialog
+
+        JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Your Reviews", JOptionPane.PLAIN_MESSAGE);
     }
 
-    private void viewOffers(String username, String password) {
+
+    private void viewReceivedOffers(String username, String password) {
         List<Offer> offers = controller.displayReceivedOffers(username, password);
 
+        JPanel offerPannel = new JPanel();
+        offerPannel.setLayout(new BoxLayout(offerPannel, BoxLayout.Y_AXIS));
+
         if (offers.isEmpty()) {
-            JOptionPane.showMessageDialog(DisplayGUI.frame, "You have no offers.", "No Offers", JOptionPane.INFORMATION_MESSAGE);
-            return;
+            offerPannel.add(new JLabel("No offers found. Please try again."));
+        } else {
+            for (Offer offer : offers) {
+                // Create a new panel for each offer
+                JPanel offerItemPanel = new JPanel();
+                offerItemPanel.setLayout(new BorderLayout());
+
+                // Display offer details
+                JTextArea offerTextArea = new JTextArea(offer.toString());
+                offerTextArea.setEditable(false);
+                offerTextArea.setMargin(new Insets(10, 10, 10, 10));
+                offerItemPanel.add(offerTextArea, BorderLayout.CENTER);
+
+                // Add "Accept Offer" button
+                JButton acceptButton = new JButton("Accept Offer");
+                acceptButton.addActionListener(e -> {
+                    int confirmation = JOptionPane.showConfirmDialog(DisplayGUI.frame,
+                            "Are you sure you want to accept this offer?",
+                            "Confirm Acceptance",
+                            JOptionPane.YES_NO_OPTION);
+
+                    if (confirmation == JOptionPane.YES_OPTION) {
+                        boolean success = controller.acceptOffer(username, password, offer.getId());
+                        if (success) {
+                            JOptionPane.showMessageDialog(DisplayGUI.frame,
+                                    "Offer accepted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            offerPannel.remove(offerItemPanel); // Remove the accepted offer panel
+                            offerPannel.revalidate();
+                            offerPannel.repaint();
+                        } else {
+                            JOptionPane.showMessageDialog(DisplayGUI.frame,
+                                    "Failed to accept offer.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                });
+                offerItemPanel.add(acceptButton, BorderLayout.EAST);
+
+                // Add the offer item panel to the main offer panel
+                offerPannel.add(offerItemPanel);
+            }
         }
 
-        JPanel offersPanel = new JPanel();
-        offersPanel.setLayout(new BoxLayout(offersPanel, BoxLayout.Y_AXIS));
+        JScrollPane scrollPane = new JScrollPane(offerPannel);
+        scrollPane.setPreferredSize(new Dimension(600, 500)); // Set preferred size for the dialog
 
-        for (Offer offer : offers) {
-            JPanel offerPanel = new JPanel();
-            offerPanel.setLayout(new BorderLayout());
-
-            JTextArea offerTextArea = new JTextArea(offer.toString());
-            offerTextArea.setEditable(false);
-            offerTextArea.setMargin(new Insets(10, 10, 10, 10));
-            offerTextArea.setLineWrap(true);
-            offerTextArea.setWrapStyleWord(true);
-            offerPanel.add(offerTextArea, BorderLayout.CENTER);
-
-            JButton acceptButton = new JButton("Accept Offer");
-            acceptButton.addActionListener(e -> {
-                int confirmation = JOptionPane.showConfirmDialog(DisplayGUI.frame,
-                        "Are you sure you want to accept this offer?",
-                        "Confirm Acceptance",
-                        JOptionPane.YES_NO_OPTION);
-
-                if (confirmation == JOptionPane.YES_OPTION) {
-                    acceptOffer(username, password, offer);
-                    JOptionPane.showMessageDialog(DisplayGUI.frame, "Offer accepted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    offersPanel.remove(offerPanel);
-                    offersPanel.revalidate();
-                    offersPanel.repaint();
-                }
-            });
-
-            JButton declineButton = new JButton("Decline Offer");
-            declineButton.addActionListener(e -> {
-                int confirmation = JOptionPane.showConfirmDialog(DisplayGUI.frame,
-                        "Are you sure you want to decline this offer?",
-                        "Confirm Decline",
-                        JOptionPane.YES_NO_OPTION);
-
-                if (confirmation == JOptionPane.YES_OPTION) {
-                    declineOffer(username, password, offer);
-                    JOptionPane.showMessageDialog(DisplayGUI.frame, "Offer declined successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    offersPanel.remove(offerPanel);
-                    offersPanel.revalidate();
-                    offersPanel.repaint();
-                }
-            });
-
-            JPanel buttonPanel = new JPanel();
-            buttonPanel.add(acceptButton);
-            buttonPanel.add(declineButton);
-            offerPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-            offersPanel.add(offerPanel);
-        }
-
-        JScrollPane scrollPane = new JScrollPane(offersPanel);
-        scrollPane.setPreferredSize(new Dimension(800, 700));
-
-        JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Your Offers", JOptionPane.PLAIN_MESSAGE);
+        JOptionPane.showMessageDialog(DisplayGUI.frame, scrollPane, "Your Received Offers", JOptionPane.PLAIN_MESSAGE);
     }
 
     private void sendOffer(String username, String password, int selectedProduct) {
