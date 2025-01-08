@@ -66,3 +66,5 @@ The Online Marketplace is a platform designed for buying, selling, and reviewing
 
 This application is a step towards a more sustainable, inclusive, and eco-friendly approach to fashion.
 
+![Entity Relationship Diagram Team Whiteboard in Red Yellow Purple Trendy Stickers Style (4)](https://github.com/user-attachments/assets/3f131a66-17d6-492d-a127-ca55ebff57d6)
+
